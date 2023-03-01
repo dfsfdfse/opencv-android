@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Real Cool</string>
     <string name="into_name">进入</string>
+    <string name="hint">开启该权限才能正常使用自动功能</string>
 </resources>

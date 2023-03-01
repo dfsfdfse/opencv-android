@@ -12,6 +12,7 @@ public abstract class BaseServiceDialog extends Dialog {
 
     public BaseServiceDialog(@NonNull Context context) {
         super(context);
+        beforeAddContent();
         setContentView(getLayoutId());
         onInited();
     }
@@ -34,6 +35,8 @@ public abstract class BaseServiceDialog extends Dialog {
     }
 
     public abstract void hide();
+
+    protected abstract void beforeAddContent();
 
     protected abstract int getLayoutId();
 

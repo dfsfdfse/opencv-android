@@ -9,12 +9,15 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.realcool.permission.AccessibilityPermission;
 import org.realcool.permission.FloatPermission;
 import org.realcool.service.FloatService;
+import org.realcool.service.MyService;
 
 public class MainActivity extends AppCompatActivity {
     private final String STRING_ALERT = "悬浮窗";
     private final String STRING_START = "开始";
+    private final String STRING_GO = "无障碍";
     private TextView start;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case STRING_ALERT:
                         requestPermissionAndShow();
+                        break;
+                    case STRING_GO:
+                        requestAcccessibility();
                 }
             }
         });
@@ -43,10 +49,34 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkState() {
         boolean hasWinPermission = FloatPermission.getInstance().check(this);
-        if (hasWinPermission) {
-            start.setText(STRING_START);
+        boolean hasAccessibility = AccessibilityPermission.isSettingOpen(MyService.class, MainActivity.this);
+        if(hasAccessibility){
+            if (hasWinPermission) {
+                start.setText(STRING_START);
+            } else {
+                start.setText(STRING_ALERT);
+            }
+        }else {
+            start.setText(STRING_GO);
         }
     }
+    private void requestAcccessibility() {
+        new AlertDialog.Builder(this).setTitle("无障碍服务未开启")
+                .setMessage("你的手机没有开启无障碍服务，" + getString(R.string.app_name) + "将无法正常使用")
+                .setPositiveButton("去开启", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 显示授权界面
+                        try {
+                            AccessibilityPermission.jumpToSetting(MainActivity.this);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .setNegativeButton("取消", null).show();
+    }
+
     /**
      * 开启悬浮窗权限
      */

@@ -1,7 +1,9 @@
 package org.realcool.dialog;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
@@ -19,6 +21,11 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
     @Override
     public void hide() {
         if (isShowing()) dismiss();
+    }
+
+    @Override
+    protected void beforeAddContent() {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
     }
 
     @Override
@@ -43,7 +50,17 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
 
     @Override
     public void onClick(View v) {
-
+        switch (v.getId()){
+            case R.id.rc_start:
+                Log.e("start","开始了");
+                hide();
+                break;
+            case R.id.swt_cj:
+                Log.e("cj","采集开关");
+                break;
+            case R.id.swt_dy:
+                Log.e("dy","打野开关");
+        }
     }
 
     public void setListener(Listener listener) {

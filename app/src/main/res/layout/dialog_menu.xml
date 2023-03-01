@@ -1,19 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="right"
-    >
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txt_cj"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="自动采集"
+            app:layout_constraintBottom_toBottomOf="@+id/swt_cj"
+            app:layout_constraintEnd_toStartOf="@+id/cj_gl"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints" />
+
+        <Switch
+            android:id="@+id/swt_cj"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:height="40dp"
+            android:showText="true"
+            android:textOff="关"
+            android:textOn="开"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/cj_gl"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints,UseSwitchCompatOrMaterialXml" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/cj_gl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txt_dy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="自动打野"
+            app:layout_constraintBottom_toBottomOf="@+id/swt_dy"
+            app:layout_constraintEnd_toStartOf="@+id/dy_gl"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints" />
+
+        <Switch
+            android:id="@+id/swt_dy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:height="40dp"
+            android:showText="true"
+            android:textOff="关"
+            android:textOn="开"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/dy_gl"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints,UseSwitchCompatOrMaterialXml" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/dy_gl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/bt_caiji"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:background="#04AFFF"
-        android:text="@string/btn_cj"
-        android:textColor="#FFFFFF"
-        tools:visibility="visible" />
-
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="开始执行"
+        >
+    </Button>
 </LinearLayout>
