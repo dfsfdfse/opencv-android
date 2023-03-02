@@ -1,18 +1,20 @@
 package org.realcool.dialog;
 
 import android.content.Context;
-import android.util.Log;
+
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 
 import org.realcool.R;
+import org.realcool.service.event.TaskEvent;
 import org.realcool.utils.WinUtils;
 
 public class MenuDialog extends BaseServiceDialog implements View.OnClickListener {
-    private View overlay;           // 叠加层
     private Listener listener;
     public MenuDialog(@NonNull Context context) {
         super(context);
@@ -46,20 +48,38 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
     @Override
     protected void onInited() {
         setCanceledOnTouchOutside(true);
+        findViewById(R.id.rc_exec).setOnClickListener(this);
+        Switch cj = findViewById(R.id.swt_cj);
+        Switch dy = findViewById(R.id.swt_dy);
+        cj.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    TaskEvent.postTaskAction(TaskEvent.ADD_CAIJI);
+                }else {
+                    TaskEvent.postTaskAction(TaskEvent.REMOVE_CAIJI);
+                }
+            }
+        });
+        dy.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    TaskEvent.postTaskAction(TaskEvent.ADD_DAYE);
+                }else {
+                    TaskEvent.postTaskAction(TaskEvent.REMOVE_DAYE);
+                }
+            }
+        });
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.rc_start:
-                Log.e("start","开始了");
+            case R.id.rc_exec:
+                TaskEvent.postStartAction();
                 hide();
                 break;
-            case R.id.swt_cj:
-                Log.e("cj","采集开关");
-                break;
-            case R.id.swt_dy:
-                Log.e("dy","打野开关");
         }
     }
 

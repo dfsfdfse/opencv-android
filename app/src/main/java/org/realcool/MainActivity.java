@@ -6,13 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import org.realcool.permission.AccessibilityPermission;
 import org.realcool.permission.FloatPermission;
 import org.realcool.service.FloatService;
-import org.realcool.service.MyService;
+import org.realcool.service.TaskAccessibilityService;
+import org.realcool.service.TasksService;
 
 public class MainActivity extends AppCompatActivity {
     private final String STRING_ALERT = "悬浮窗";
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 switch (start.getText().toString()){
                     case STRING_START:
+                        startService(new Intent(MainActivity.this, TasksService.class));
                         startService(new Intent(MainActivity.this, FloatService.class));
                         moveTaskToBack(true);
                         break;
@@ -49,14 +52,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkState() {
         boolean hasWinPermission = FloatPermission.getInstance().check(this);
-        boolean hasAccessibility = AccessibilityPermission.isSettingOpen(MyService.class, MainActivity.this);
-        if(hasAccessibility){
+        boolean hasAccessibility = AccessibilityPermission.isSettingOpen(TaskAccessibilityService.class, MainActivity.this);
+        Log.e("hasAccessibility",Boolean.toString(hasAccessibility));
+        if (hasAccessibility){
             if (hasWinPermission) {
                 start.setText(STRING_START);
             } else {
                 start.setText(STRING_ALERT);
             }
-        }else {
+        } else {
             start.setText(STRING_GO);
         }
     }

@@ -12,6 +12,7 @@ import android.view.WindowManager;
 
 import org.realcool.R;
 import org.realcool.dialog.MenuDialog;
+
 import org.realcool.utils.WinUtils;
 
 public class FloatService extends Service {
@@ -28,6 +29,7 @@ public class FloatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e("floatService","创建了");
         fv = LayoutInflater.from(this).inflate(R.layout.float_service, null);
         int d = WinUtils.dip2px(this, 50);
         floatParams = WinUtils.newWmParams(d, d, this);
