@@ -35,20 +35,6 @@ public class FloatService extends Service {
         floatParams = WinUtils.newWmParams(d, d, this);
         wm = WinUtils.getWM(this);
         md = new MenuDialog(this);
-        md.setListener(new MenuDialog.Listener() {
-            @Override
-            public void onFloatWindowAttachChange(boolean attach) {
-                if (attach) {
-                    wm.addView(fv, floatParams);
-                } else {
-                    wm.removeView(fv);
-                }
-            }
-            @Override
-            public void onExitService() {
-                stopSelf();
-            }
-        });
         wm.addView(fv, floatParams);
         fv.setClickable(true);
         fv.setOnTouchListener(new View.OnTouchListener() {

@@ -28,6 +28,13 @@ public class TapTask extends MinTask {
         setNewThread(newThread);
     }
 
+    public TapTask(int x, int y, long duration, long delay) {
+        this.x = x;
+        this.y = y;
+        this.duration = duration;
+        setDelay(delay);
+    }
+
     public TapTask(int x, int y, long duration, boolean newThread, long delay) {
         this.x = x;
         this.y = y;
@@ -58,11 +65,5 @@ public class TapTask extends MinTask {
 
     public void setDuration(long duration) {
         this.duration = duration;
-    }
-
-    @Override
-    protected void doTask() {
-        Log.e("tapTask","开始执行tap任务");
-        TaskEvent.postAction(this);
     }
 }

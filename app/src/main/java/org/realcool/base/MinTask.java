@@ -1,5 +1,9 @@
 package org.realcool.base;
 
+import android.util.Log;
+
+import org.realcool.service.event.TaskEvent;
+
 public abstract class MinTask extends BaseTask{
     private boolean newThread;
 
@@ -30,7 +34,9 @@ public abstract class MinTask extends BaseTask{
         this.newThread = newThread;
     }
 
-    protected abstract void doTask();
+    public void doTask() {
+        TaskEvent.postAction(this);
+    }
 
     private void doTaskDelay(){
         Long d = getDelay();

@@ -35,9 +35,14 @@ public class TasksService extends Service {
     private void exec() {
         Log.e("task", "开始执行任务中");
         if (tasks != null) {
-            for (MainTask task : tasks) {
-                task.exec();
-            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (MainTask task : tasks) {
+                        task.exec();
+                    }
+                }
+            }).start();
         }
     }
 
