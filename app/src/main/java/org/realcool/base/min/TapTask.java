@@ -1,11 +1,12 @@
 package org.realcool.base.min;
 
-import android.util.Log;
-
 import org.realcool.base.MinTask;
-import org.realcool.service.event.TaskEvent;
 
 public class TapTask extends MinTask {
+    public static final int PRESS_LONG = 500;
+
+    public static final int TAP_SHORT = 50;
+
     private int x;
 
     private int y;
@@ -13,33 +14,29 @@ public class TapTask extends MinTask {
     private long duration;
 
     public TapTask() {
+        super();
+        this.duration = TAP_SHORT;
+    }
+
+    public TapTask(int x, int y) {
+        super();
+        this.x = x;
+        this.y = y;
+        this.duration = TAP_SHORT;
     }
 
     public TapTask(int x, int y, long duration) {
+        super();
         this.x = x;
         this.y = y;
         this.duration = duration;
-    }
-
-    public TapTask(int x, int y, long duration, boolean newThread) {
-        this.x = x;
-        this.y = y;
-        this.duration = duration;
-        setNewThread(newThread);
     }
 
     public TapTask(int x, int y, long duration, long delay) {
+        super();
         this.x = x;
         this.y = y;
         this.duration = duration;
-        setDelay(delay);
-    }
-
-    public TapTask(int x, int y, long duration, boolean newThread, long delay) {
-        this.x = x;
-        this.y = y;
-        this.duration = duration;
-        setNewThread(newThread);
         setDelay(delay);
     }
 

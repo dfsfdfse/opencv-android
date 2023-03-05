@@ -54,24 +54,16 @@ public class SwipeTask extends MinTask {
     }
 
     public SwipeTask() {
+        super();
     }
 
     public SwipeTask(int sx, int sy, int ex, int ey, long duration, long delay) {
+        super();
         this.sx = sx;
         this.sy = sy;
         this.ex = ex;
         this.ey = ey;
         this.duration = duration;
-        setDelay(delay);
-    }
-
-    public SwipeTask(int sx, int sy, int ex, int ey, long duration, boolean newThread, long delay) {
-        this.sx = sx;
-        this.sy = sy;
-        this.ex = ex;
-        this.ey = ey;
-        this.duration = duration;
-        setNewThread(newThread);
         setDelay(delay);
     }
 }

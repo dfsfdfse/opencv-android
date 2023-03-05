@@ -9,16 +9,11 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.realcool.base.MainTask;
-import org.realcool.base.impl.CaiJiTask;
-import org.realcool.base.impl.DaYeTask;
+import org.realcool.base.Task;
 import org.realcool.service.event.TaskEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TasksService extends Service {
-    private List<MainTask> tasks;
-
+    private Task task;
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -27,56 +22,36 @@ public class TasksService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        tasks = new ArrayList<MainTask>();
         EventBus.getDefault().register(this);
-        Log.e("taskService","创建了");
-    }
-
-    private void exec() {
-        Log.e("task", "开始执行任务中");
-        if (tasks != null) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (MainTask task : tasks) {
-                        task.exec();
-                    }
-                }
-            }).start();
-        }
+        task = new Task();
+        //初始的时候不执行
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onReceiveEvent(TaskEvent event) {
-        if (tasks != null) {
-            switch (event.getType()) {
-                case TaskEvent.ADD_CAIJI:
-                    tasks.add(new CaiJiTask());
-                    break;
-                case TaskEvent.ADD_DAYE:
-                    tasks.add(new DaYeTask());
-                    break;
-                case TaskEvent.REMOVE_CAIJI:
-                    removeTask(MainTask.CAIJI_TYPE);
-                    break;
-                case TaskEvent.REMOVE_DAYE:
-                    removeTask(MainTask.DAYE_TYPE);
-                    break;
-                case TaskEvent.START:
-                    exec();
-                    break;
-            }
+        String exe = "";
+        switch (event.getType()) {
+            case TaskEvent.ADD_CAIJI:
+                exe = "开启采集";
+                ((MainTask)task.getByType(MainTask.CAIJI_TYPE)).setStop(false);break;
+            case TaskEvent.ADD_DAYE:
+                exe = "开启打野";
+                ((MainTask)(task.getByType(MainTask.DAYE_TYPE))).setStop(false);break;
+            case TaskEvent.STOP_CAIJI:
+                exe = "关闭采集";
+                task.getByType(MainTask.CAIJI_TYPE).setStop(true);break;
+            case TaskEvent.STOP_DAYE:
+                exe = "关闭打野";
+                task.getByType(MainTask.DAYE_TYPE).setStop(true);break;
+            case TaskEvent.START:
+                exe = "开始任务";
+                task.notifyStart();break;
+            case TaskEvent.STOP:
+                exe = "停止任务";
+                //todo 停止正在working的任务 (目前不支持 对循环任务的停止)
+                task.setStop(true);
         }
+        Log.e(getClass().getName(), "执行指令--" + exe);
     }
 
-    private void removeTask(int type) {
-        if (tasks != null) {
-            for (int i = 0; i < tasks.size(); i++) {
-                if (tasks.get(i).getType() == type){
-                    tasks.remove(i);
-                    break;
-                }
-            }
-        }
-    }
 }

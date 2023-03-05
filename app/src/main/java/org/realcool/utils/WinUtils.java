@@ -5,6 +5,7 @@ import static android.content.Context.WINDOW_SERVICE;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 
@@ -23,6 +24,7 @@ public class WinUtils {
      * 获取屏幕宽度
      */
     public static int getSW(Context context){
+        Log.e("width",context.getResources().getDisplayMetrics().widthPixels+"");
         return context.getResources().getDisplayMetrics().widthPixels;
     }
 
@@ -31,6 +33,10 @@ public class WinUtils {
      */
     public static int getSH(Context context){
         return context.getResources().getDisplayMetrics().heightPixels;
+    }
+
+    public static int getDDpi(Context context){
+        return context.getResources().getDisplayMetrics().densityDpi;
     }
 
     public static WindowManager.LayoutParams newWmParams(int width, int height, Context context) {

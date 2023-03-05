@@ -2,17 +2,25 @@ package org.realcool.service;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 
+import org.greenrobot.eventbus.EventBus;
 import org.realcool.R;
+import org.realcool.base.Task;
+import org.realcool.bean.ScreenInfo;
 import org.realcool.dialog.MenuDialog;
 
+import org.realcool.service.event.TaskEvent;
 import org.realcool.utils.WinUtils;
 
 public class FloatService extends Service {
@@ -71,6 +79,7 @@ public class FloatService extends Service {
                     case MotionEvent.ACTION_UP:
                         if (!isMoving) {
                             md.show();
+                            TaskEvent.postTaskAction(TaskEvent.STOP);
                             return true;
                         }
                         break;
@@ -78,7 +87,46 @@ public class FloatService extends Service {
                 return false;
             }
         });
+        registerConfigChangeReceiver();
     }
+
+    private void registerConfigChangeReceiver(){
+        IntentFilter configChangeFilter = new IntentFilter();
+        configChangeFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
+        configChangeFilter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        registerReceiver(mConfigChangeReceiver, configChangeFilter);
+    }
+
+    private BroadcastReceiver mConfigChangeReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("屏幕旋转","悬浮球，获取屏幕方向 getRotation = "
+                    +wm.getDefaultDisplay().getRotation());
+            int h,w;
+            switch (wm.getDefaultDisplay().getRotation()){
+                case Surface.ROTATION_0:
+                    //竖屏
+                    h = WinUtils.getSH(FloatService.this);
+                    w = WinUtils.getSW(FloatService.this);
+                    ScreenInfo.getInstance().setScreenHeight(h);
+                    ScreenInfo.getInstance().setScreenWidth(w);
+                    break;
+                case Surface.ROTATION_90:
+                case Surface.ROTATION_270:
+                    //顺时针旋转270度
+                    h = WinUtils.getSH(FloatService.this);
+                    w = WinUtils.getSW(FloatService.this);
+                    ScreenInfo.getInstance().setScreenHeight(w);
+                    ScreenInfo.getInstance().setScreenWidth(h);
+                    //顺时针旋转90度
+                    break;
+                //顺时针旋转180度
+                default:
+                    break;
+            }
+            TaskEvent.postAction(ScreenInfo.getInstance());
+        }
+    };
 
     @Override
     public void onDestroy() {

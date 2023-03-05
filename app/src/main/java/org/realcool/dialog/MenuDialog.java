@@ -56,7 +56,7 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
                 if (isChecked){
                     TaskEvent.postTaskAction(TaskEvent.ADD_CAIJI);
                 }else {
-                    TaskEvent.postTaskAction(TaskEvent.REMOVE_CAIJI);
+                    TaskEvent.postTaskAction(TaskEvent.STOP_CAIJI);
                 }
             }
         });
@@ -66,7 +66,7 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
                 if (isChecked){
                     TaskEvent.postTaskAction(TaskEvent.ADD_DAYE);
                 }else {
-                    TaskEvent.postTaskAction(TaskEvent.REMOVE_DAYE);
+                    TaskEvent.postTaskAction(TaskEvent.STOP_DAYE);
                 }
             }
         });

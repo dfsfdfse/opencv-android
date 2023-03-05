@@ -6,10 +6,11 @@ import org.greenrobot.eventbus.EventBus;
 
 public class TaskEvent {
     public static final int ADD_DAYE = 1;
-    public static final int REMOVE_DAYE = 3;
+    public static final int STOP_DAYE = 3;
     public static final int ADD_CAIJI = 2;
-    public static final int REMOVE_CAIJI = 4;
+    public static final int STOP_CAIJI = 4;
     public static final int START = 5;
+    public static final int STOP = 6;
 
     private int type;
     public TaskEvent() {
@@ -36,8 +37,6 @@ public class TaskEvent {
     }
 
     public static void postAction(Object event) {
-        Log.e("thread", Thread.currentThread().getName());
-        Log.e("TaskEvent","taskEvent...");
         EventBus.getDefault().post(event);
     }
 }
