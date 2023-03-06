@@ -1,11 +1,14 @@
 package org.realcool.base;
 
+import android.util.Log;
+
 import java.util.LinkedList;
 
 public class MainTask {
     private final LinkedList<BaseTask> children;
     private final TaskLine taskLine;
     private int index;
+    private int closeChild;
     public MainTask() {
         children = new LinkedList<>();
         taskLine = new TaskLine(this);
@@ -13,13 +16,20 @@ public class MainTask {
     }
 
     public void run(){
-        if (children.size() == 0) taskLine.stop();
-        taskLine.waitRun();
-        if (children.size() > index){
-            children.get(index).run();
+        int size = children.size();
+        Log.e("size", "size:"+size +",closeChild:"+ closeChild);
+        if (size == closeChild) {
+            taskLine.stop();
+            taskLine.waitRun();
+        }
+        if (size > index){
+            BaseTask task = children.get(index);
+            if (task.isOpen()) task.run();
+            else closeChild++;
             index++;
         } else {
             index = 0;
+            closeChild = 0;
         }
         run();
     }

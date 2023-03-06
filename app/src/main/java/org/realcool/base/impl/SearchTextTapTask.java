@@ -18,5 +18,6 @@ public class SearchTextTapTask extends CollectTask {
                 loop = true;
             }
         });
+        add(searchTextTask);
     }
 }

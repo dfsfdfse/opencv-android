@@ -30,6 +30,7 @@ public abstract class BaseTask {
 
     public BaseTask() {
         this.id = IdUtils.genId();
+        this.open = true;
     }
 
     public BaseTask getParent() {
@@ -95,16 +96,14 @@ public abstract class BaseTask {
     protected void run() {
         Log.e(getClass().getName(), "run");
         getTaskLine().waitRun();
-        if (open) {
-            working = true;
-            waitExec();
-            Log.e(getClass().getName(), "开始执行");
-            exec();
-            if (finished != null) finished.finished();
-            Log.e(getClass().getName(), "执行完毕");
-            if (loop) run();
-            working = false;
-        }
+        working = true;
+        waitExec();
+        Log.e(getClass().getName(), "开始执行");
+        exec();
+        if (finished != null) finished.finished();
+        Log.e(getClass().getName(), "执行完毕");
+        if (loop && open) run();
+        working = false;
     }
 
     protected void waitExec() {

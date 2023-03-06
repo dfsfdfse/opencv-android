@@ -6,7 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -39,6 +41,7 @@ public class FloatService extends Service {
         fv = LayoutInflater.from(this).inflate(R.layout.float_service, null);
         int d = WinUtils.dip2px(this, 50);
         floatParams = WinUtils.newWmParams(d, d, this);
+
         wm = WinUtils.getWM(this);
         md = new MenuDialog(this);
         wm.addView(fv, floatParams);

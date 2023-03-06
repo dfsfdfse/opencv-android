@@ -27,6 +27,7 @@ public class TasksService extends Service {
         EventBus.getDefault().register(this);
         task = new MainTask();
         daYeTask = new DaYeTask();
+        daYeTask.setOpen(false);
         task.add(daYeTask);
     }
 

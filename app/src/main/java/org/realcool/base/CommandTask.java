@@ -19,6 +19,7 @@ public abstract class CommandTask extends BaseTask{
 
     public void result(BaseMsg msg){
         this.msg = msg;
+        Log.e(getClass().getName(), "获得结果");
         startLine();
     }
 
