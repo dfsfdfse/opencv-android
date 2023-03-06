@@ -1,8 +1,8 @@
 package org.realcool.base.min;
 
-import org.realcool.base.MinTask;
+import org.realcool.base.CommandTask;
 
-public class TapTask extends MinTask {
+public class TapTask extends CommandTask {
     public static final int PRESS_LONG = 500;
 
     public static final int TAP_SHORT = 50;
@@ -37,7 +37,7 @@ public class TapTask extends MinTask {
         this.x = x;
         this.y = y;
         this.duration = duration;
-        setDelay(delay);
+        this.delay = delay;
     }
 
     public int getX() {

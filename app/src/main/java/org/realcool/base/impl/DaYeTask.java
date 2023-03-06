@@ -1,14 +1,11 @@
 package org.realcool.base.impl;
 
-import org.realcool.base.MainTask;
+import org.realcool.base.CollectTask;
 
-public class DaYeTask extends MainTask {
+public class DaYeTask extends CollectTask {
 
     public DaYeTask(){
         super();
-        setType(MainTask.DAYE_TYPE);
-        EnterGameTask task = new EnterGameTask();
-        task.setDelay(2000);
-        add(task);
+        add(new SearchTextTapTask("日历"));
     }
 }

@@ -1,8 +1,8 @@
 package org.realcool.base.min;
 
-import org.realcool.base.MinTask;
+import org.realcool.base.CommandTask;
 
-public class SwipeTask extends MinTask {
+public class SwipeTask extends CommandTask {
     private int sx;
 
     private int sy;
@@ -64,6 +64,6 @@ public class SwipeTask extends MinTask {
         this.ex = ex;
         this.ey = ey;
         this.duration = duration;
-        setDelay(delay);
+        this.delay = delay;
     }
 }

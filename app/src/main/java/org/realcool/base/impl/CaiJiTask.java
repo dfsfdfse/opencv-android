@@ -1,10 +1,9 @@
 package org.realcool.base.impl;
 
-import org.realcool.base.MainTask;
+import org.realcool.base.CollectTask;
 
-public class CaiJiTask extends MainTask {
+public class CaiJiTask extends CollectTask {
     public CaiJiTask() {
         super();
-        setType(MainTask.CAIJI_TYPE);
     }
 }

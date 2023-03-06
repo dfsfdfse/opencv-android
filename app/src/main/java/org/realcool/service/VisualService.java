@@ -1,6 +1,5 @@
 package org.realcool.service;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -20,11 +19,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.opencv.core.Mat;
 import org.realcool.MainActivity;
-import org.realcool.base.BaseTask;
 import org.realcool.base.min.ComparePicPointTask;
 import org.realcool.base.min.GetAllTextTask;
 import org.realcool.base.min.SearchTextTask;
-import org.realcool.base.msg.BaseMsg;
 import org.realcool.base.msg.PicTextMsg;
 import org.realcool.base.msg.PointMsg;
 import org.realcool.bean.MatchPoint;
@@ -93,38 +90,23 @@ public class VisualService extends Service {
         Mat origin = SearchImgUtils.getMatByBitmap(getLatest());
         TempMat tempMat = new TempMat(origin, temp);
         MatchPoint matchPoint = SearchImgUtils.boolMatch(tempMat);
-        BaseTask.Listener listener = task.getListener();
-        if (listener != null) {
-            if (matchPoint.isMatch()) {
-                PointMsg points = SearchImgUtils.getPoints(matchPoint, tempMat);
-                listener.onFinished(points);
-            } else {
-                listener.onFinished(new BaseMsg(BaseMsg.FAIL));
-            }
+        PointMsg msg = null;
+        if (matchPoint.isMatch()) {
+            msg = SearchImgUtils.getPoints(matchPoint, tempMat);
         }
-        task.notifyResult();
+        task.result(msg);
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void searchText(SearchTextTask task) {
-        BaseTask.Listener listener = task.getListener();
-        PointMsg point = SearchImgUtils.searchText(MainActivity.getInstance().getOcrEngine(), task.getText(), getLatest());
-        if (point != null) {
-            point.setMsg("找到文字" + task.getText());
-            if (listener != null) listener.onFinished(point);
-        } else {
-            if (listener != null)
-                listener.onFinished(new BaseMsg(BaseMsg.FAIL, "未找到文字" + task.getText()));
-        }
-        task.notifyResult();
+        PointMsg msg = SearchImgUtils.searchText(MainActivity.getInstance().getOcrEngine(), task.getText(), getLatest());
+        task.result(msg);
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void getAllText(GetAllTextTask task){
-        BaseTask.Listener listener = task.getListener();
-        PicTextMsg picTextMsg = SearchImgUtils.searchAllText(MainActivity.getInstance().getOcrEngine(), getLatest());
-        if (listener != null) listener.onFinished(picTextMsg);
-        task.notifyResult();
+        PicTextMsg msg = SearchImgUtils.searchAllText(MainActivity.getInstance().getOcrEngine(), getLatest());
+        task.result(msg);
     }
 
 

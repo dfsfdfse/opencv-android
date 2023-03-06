@@ -1,7 +1,5 @@
 package org.realcool.service.event;
 
-import android.util.Log;
-
 import org.greenrobot.eventbus.EventBus;
 
 public class TaskEvent {
@@ -11,6 +9,8 @@ public class TaskEvent {
     public static final int STOP_CAIJI = 4;
     public static final int START = 5;
     public static final int STOP = 6;
+    public static final int OPEN = 7;
+    public static final int CLOSE = 8;
 
     private int type;
     public TaskEvent() {

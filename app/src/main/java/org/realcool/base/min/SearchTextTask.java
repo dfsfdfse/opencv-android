@@ -1,8 +1,8 @@
 package org.realcool.base.min;
 
-import org.realcool.base.MinTask;
+import org.realcool.base.CommandTask;
 
-public class SearchTextTask extends MinTask {
+public class SearchTextTask extends CommandTask {
     private String text;
     public SearchTextTask(String text){
         this.text = text;

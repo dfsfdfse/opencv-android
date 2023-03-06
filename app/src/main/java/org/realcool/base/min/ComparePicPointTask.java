@@ -2,9 +2,9 @@ package org.realcool.base.min;
 
 import android.graphics.Bitmap;
 
-import org.realcool.base.MinTask;
+import org.realcool.base.CommandTask;
 
-public class ComparePicPointTask extends MinTask {
+public class ComparePicPointTask extends CommandTask {
     private int img;
 
     private Bitmap screen;

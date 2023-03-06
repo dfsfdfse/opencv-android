@@ -14,9 +14,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 
-import org.greenrobot.eventbus.EventBus;
 import org.realcool.R;
-import org.realcool.base.Task;
 import org.realcool.bean.ScreenInfo;
 import org.realcool.dialog.MenuDialog;
 

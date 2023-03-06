@@ -9,11 +9,8 @@ import android.view.accessibility.AccessibilityEvent;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.realcool.base.BaseTask;
-import org.realcool.base.MinTask;
 import org.realcool.base.min.SwipeTask;
 import org.realcool.base.min.TapTask;
-import org.realcool.base.msg.BaseMsg;
 
 public class TaskAccessibilityService extends AccessibilityService {
     @Override
@@ -34,21 +31,19 @@ public class TaskAccessibilityService extends AccessibilityService {
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onTap(TapTask task){
         Log.e(getClass().getName(),"模拟点击事件, x: " + task.getX()+",y:" + task.getY()+",duration:"+task.getDuration());
-        BaseTask.Listener listener = task.getListener();
         int x = task.getX();
         int y = task.getY();
         GestureDescription.Builder builder = new GestureDescription.Builder();
         Path p = new Path();
-        if (x > 0 && y > 0){
-            p.moveTo(x , y);
-            p.lineTo(x , y);
+        if (x > 0 && y > 0) {
+            p.moveTo(x, y);
+            p.lineTo(x, y);
             builder.addStroke(new GestureDescription.StrokeDescription(p, 0, TapTask.TAP_SHORT));
             GestureDescription gesture = builder.build();
             dispatchGesture(gesture, new GestureResultCallback() {
                 @Override
                 public void onCompleted(GestureDescription gestureDescription) {
                     super.onCompleted(gestureDescription);
-                    if (listener != null) listener.onFinished(new BaseMsg(BaseMsg.FINISH));
                     Log.e("Tag", "onCompleted: 完成..........");
                 }
 
@@ -57,16 +52,13 @@ public class TaskAccessibilityService extends AccessibilityService {
                     super.onCancelled(gestureDescription);
                 }
             }, null);
-        } else {
-            if (listener != null) listener.onFinished(new BaseMsg(BaseMsg.FAIL, "图片位置获取有问题"));
         }
-        task.notifyResult();
+        task.startLine();
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onSwipe(SwipeTask task){
         Log.e(getClass().getName(),"开始swipe...");
-        BaseTask.Listener listener = task.getListener();
         GestureDescription.Builder builder = new GestureDescription.Builder();
         Path p = new Path();
         p.moveTo(task.getSx() , task.getSy());
@@ -77,7 +69,6 @@ public class TaskAccessibilityService extends AccessibilityService {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-                if (listener != null) listener.onFinished(new BaseMsg(BaseMsg.FINISH));
                 Log.e("Tag", "onCompleted: 完成..........");
             }
 
@@ -85,9 +76,8 @@ public class TaskAccessibilityService extends AccessibilityService {
             public void onCancelled(GestureDescription gestureDescription) {
                 super.onCancelled(gestureDescription);
                 Log.e("Tag", "onCompleted: 取消..........");
-
             }
         }, null);
-        task.notifyResult();
+        task.startLine();
     }
 }

@@ -1,6 +1,6 @@
 package org.realcool.base.min;
 
-import org.realcool.base.MinTask;
+import org.realcool.base.CommandTask;
 
-public class GetAllTextTask extends MinTask {
+public class GetAllTextTask extends CommandTask {
 }
