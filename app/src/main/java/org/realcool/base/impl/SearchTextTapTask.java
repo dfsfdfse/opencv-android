@@ -9,7 +9,7 @@ public class SearchTextTapTask extends CollectTask {
     public SearchTextTapTask(String searchText){
         super();
         SearchTextTask searchTextTask = new SearchTextTask(searchText);
-        searchTextTask.setOnFinished(() -> {
+        searchTextTask.addOnFinished(() -> {
             PointMsg msg = (PointMsg) searchTextTask.getMsg();
             if (msg != null){
                 add(new TapTask(msg.getX(), msg.getY()));

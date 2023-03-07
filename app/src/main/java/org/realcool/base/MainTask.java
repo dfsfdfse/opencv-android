@@ -1,27 +1,43 @@
 package org.realcool.base;
 
-import android.util.Log;
+import org.realcool.bean.Page;
+import org.realcool.bean.PageLoader;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public class MainTask {
     private final LinkedList<BaseTask> children;
     private final TaskLine taskLine;
     private int index;
     private int closeChild;
+    private Page currentPage;
+    private List<Page> pageList;
+
     public MainTask() {
         children = new LinkedList<>();
         taskLine = new TaskLine(this);
         new Thread(taskLine).start();
     }
 
+    public Page getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(Page currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    public List<Page> getPageList() {
+        return pageList;
+    }
+
+    public void setPageList(List<Page> pageList) {
+        this.pageList = pageList;
+    }
+
     public void run(){
         int size = children.size();
-        Log.e("size", "size:"+size +",closeChild:"+ closeChild);
-        if (size == closeChild) {
-            taskLine.stop();
-            taskLine.waitRun();
-        }
         if (size > index){
             BaseTask task = children.get(index);
             if (task.isOpen()) task.run();
@@ -30,6 +46,10 @@ public class MainTask {
         } else {
             index = 0;
             closeChild = 0;
+        }
+        if (size == closeChild) {
+            taskLine.stop();
+            taskLine.waitRun();
         }
         run();
     }

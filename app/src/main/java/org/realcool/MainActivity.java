@@ -1,7 +1,5 @@
 package org.realcool;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -26,13 +24,19 @@ import android.widget.Toast;
 import com.benjaminwan.ocrlibrary.OcrEngine;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.osgi.OpenCVNativeLoader;
+import org.realcool.bean.PageLoader;
 import org.realcool.permission.AccessibilityPermission;
 import org.realcool.permission.FloatPermission;
 import org.realcool.service.FloatService;
 import org.realcool.service.TaskAccessibilityService;
 import org.realcool.service.TasksService;
 import org.realcool.service.VisualService;
+import org.realcool.utils.FileUtils;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection{
     private final String STRING_ALERT = "悬浮窗";
@@ -61,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         initOpenCV();
         checkPermission();
         startScreenRecording();
+        PageLoader.loadPage(this, "source.yaml");
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

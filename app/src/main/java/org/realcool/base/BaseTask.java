@@ -4,6 +4,8 @@ import android.util.Log;
 
 import org.realcool.utils.IdUtils;
 
+import java.util.LinkedList;
+
 public abstract class BaseTask {
 
     protected final String id;
@@ -20,16 +22,19 @@ public abstract class BaseTask {
 
     private boolean open;
 
+    private BaseTask rootParent;
+
     protected TaskLine taskLine;
 
-    private OnFinished finished;
+    private LinkedList<OnFinished> finished;
 
-    public void setOnFinished(OnFinished finished) {
-        this.finished = finished;
+    public void addOnFinished(OnFinished finish) {
+        this.finished.addLast(finish);
     }
 
     public BaseTask() {
         this.id = IdUtils.genId();
+        this.finished = new LinkedList<>();
         this.open = true;
     }
 
@@ -94,13 +99,16 @@ public abstract class BaseTask {
     }
 
     protected void run() {
-        Log.e(getClass().getName(), "run");
         getTaskLine().waitRun();
         working = true;
         waitExec();
         Log.e(getClass().getName(), "开始执行");
         exec();
-        if (finished != null) finished.finished();
+        if (finished != null) {
+            for (OnFinished onFinished : finished) {
+                onFinished.finished();
+            }
+        }
         Log.e(getClass().getName(), "执行完毕");
         if (loop && open) run();
         working = false;
@@ -124,11 +132,11 @@ public abstract class BaseTask {
     }
 
     public TaskLine getTaskLine(){
-        return getRootParent().taskLine;
+        return taskLine != null ? taskLine : (taskLine = getRootParent().taskLine);
     }
 
     public BaseTask getRootParent(){
-        return getRootParent(this);
+        return rootParent != null ? rootParent : (rootParent = getRootParent(this));
     }
 
     private BaseTask getRootParent(BaseTask note){

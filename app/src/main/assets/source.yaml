@@ -1,0 +1,71 @@
+pages:
+  relation:
+    首页:
+      闯关模式:
+      世界模式:
+        军报:
+        天选印记:
+        任务:
+        联盟:
+        成就:
+        地图:
+        主城:
+        聊天:
+        野怪:
+          讨伐:
+        矿:
+        木:
+        粮:
+      头像:
+      每日领元宝:
+      限充:
+      军令:
+      铜钱:
+      元宝:
+      邮件:
+      设置:
+      签到:
+      福利:
+      探宝:
+      活动:
+      好友:
+      聊天:
+      商城:
+      英雄:
+      道具:
+      工会:
+      组局:
+  feature:
+    首页:
+      featureText:
+        - 每日领元宝
+        - 限充
+        - 签到福利
+        - 闯关模式
+        - 世界模式
+        - 联盟征召
+        - 挑战模式
+        - 3
+      featureImage:
+      enter:
+    世界模式:
+      featureText:
+        - 军报
+        - 天选
+        - 印记
+        - 任务
+        - 3
+      featureImage:
+        - images/junbao.jpg
+        - images/renwu.jpg
+        - images/tianxuan.jpg
+      enter:
+        image:
+
+        text:
+          - 世界模式
+          - 联盟征召
+        position:
+
+
+

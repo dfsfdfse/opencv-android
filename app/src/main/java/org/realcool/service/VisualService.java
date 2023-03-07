@@ -25,12 +25,15 @@ import org.realcool.base.min.SearchTextTask;
 import org.realcool.base.msg.PicTextMsg;
 import org.realcool.base.msg.PointMsg;
 import org.realcool.bean.MatchPoint;
+import org.realcool.bean.Page;
+import org.realcool.bean.PageLoader;
 import org.realcool.bean.ScreenInfo;
 import org.realcool.bean.TempMat;
 import org.realcool.utils.SearchImgUtils;
 import org.realcool.utils.WinUtils;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public class VisualService extends Service {
     private ImageReader imgReader;
@@ -122,12 +125,12 @@ public class VisualService extends Service {
             imgReader = null;
             imgReader = ImageReader.newInstance(sw, sh,PixelFormat.RGBA_8888, 2);
         }
-        if (projection != null) {
+        /*if (projection != null) {
             projection.stop();
             projection = null;
             projection = ((MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE))
                     .getMediaProjection(code, data);
-        }
+        }*/
         if (display != null) {
             display.release();
             display = null;
