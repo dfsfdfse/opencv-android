@@ -2,6 +2,8 @@ package org.realcool.base;
 
 import android.util.Log;
 
+import org.realcool.bean.Page;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -11,6 +13,7 @@ public class TaskLine implements Runnable{
     private final Condition pos;
     private boolean running;
     private final MainTask task;
+    private Page currentPage;
 
     public TaskLine(MainTask task) {
         super();
@@ -26,6 +29,7 @@ public class TaskLine implements Runnable{
     @Override
     public void run() {
         Log.e(getClass().getName(), "开始运行run");
+
         task.run();
     }
 

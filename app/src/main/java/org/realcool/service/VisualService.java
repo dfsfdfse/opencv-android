@@ -19,9 +19,13 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.opencv.core.Mat;
 import org.realcool.MainActivity;
+import org.realcool.base.impl.CheckPageTask;
 import org.realcool.base.min.ComparePicPointTask;
 import org.realcool.base.min.GetAllTextTask;
+import org.realcool.base.min.GetCurrentTask;
 import org.realcool.base.min.SearchTextTask;
+import org.realcool.base.msg.BaseMsg;
+import org.realcool.base.msg.BitmapMsg;
 import org.realcool.base.msg.PicTextMsg;
 import org.realcool.base.msg.PointMsg;
 import org.realcool.bean.MatchPoint;
@@ -98,6 +102,16 @@ public class VisualService extends Service {
             msg = SearchImgUtils.getPoints(matchPoint, tempMat);
         }
         task.result(msg);
+    }
+    //todo 判断当前所在页面是不是指定页面 page getLast
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void checkPage(CheckPageTask task){
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void getCurrentBitmap(GetCurrentTask task){
+        task.result(new BitmapMsg(getLatest()));
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
