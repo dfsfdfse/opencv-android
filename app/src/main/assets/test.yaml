@@ -2,17 +2,10 @@ pages:
   relation:
     首页:
       应用1:
-      应用2:
   feature:
     首页:
-      featureText:
-        - 日历
-        - 设置
-    应用1:
       featureImage:
-        - images/rd.jpg
-    应用2:
+        - images/gmail.jpg
+    应用1:
       featureText:
-        - 微信
-        - 斗鱼
-        - 手写笔
+        - 照片

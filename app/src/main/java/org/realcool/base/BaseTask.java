@@ -102,7 +102,6 @@ public abstract class BaseTask {
         getTaskLine().waitRun();
         working = true;
         waitExec();
-        Log.e(getClass().getName(), "开始执行");
         exec();
         if (finished.size() > 0) {
             getTaskLine().waitRun();
@@ -110,7 +109,6 @@ public abstract class BaseTask {
                 onFinished.finished();
             }
         }
-        Log.e(getClass().getName(), "执行完毕");
         if (loop && open) run();
         working = false;
     }

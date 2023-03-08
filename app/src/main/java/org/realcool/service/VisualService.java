@@ -11,6 +11,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -46,25 +47,40 @@ public class VisualService extends Service {
     private Image image;
     MediaProjection projection;
     VirtualDisplay display;
+    Handler handler;
 
     @Override
     public IBinder onBind(Intent intent) {
-        EventBus.getDefault().register(this);
+        EventBus aDefault = EventBus.getDefault();
+        if (!aDefault.isRegistered(this)){
+            aDefault.register(this);
+        }
         code = intent.getIntExtra("code", -1);
         data = intent.getParcelableExtra("data");
         sw = WinUtils.getSW(this);
         sh = WinUtils.getSH(this);
         lock = new ReentrantLock();
         wait = lock.newCondition();
-        projection = ((MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE))
-                .getMediaProjection(code, data);
+        handler = new Handler();
+        initMediaProjection();
         initReader();
-        display = projection.createVirtualDisplay("VisualService", sw, sh, WinUtils.getDDpi(this),
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                imgReader.getSurface(), null, null);
+        initDisplay();
         return null;
     }
+    private void initMediaProjection(){
+        if (projection != null){
+            projection.stop();
+            projection = null;
+        }
+        projection = ((MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE))
+                .getMediaProjection(code, data);
+    }
+
     private void initReader(){
+        if (imgReader!=null){
+            imgReader.close();
+            imgReader = null;
+        }
         imgReader = ImageReader.newInstance(sw, sh, PixelFormat.RGBA_8888, 2);
         imgReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
@@ -82,8 +98,19 @@ public class VisualService extends Service {
                     }
                 }
             }
-        }, null);
+        }, handler);
     }
+
+    private void initDisplay(){
+        if (display != null){
+            display.release();
+            display = null;
+        }
+        display = projection.createVirtualDisplay("VisualService", sw, sh, WinUtils.getDDpi(this),
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                imgReader.getSurface(), null, null);
+    }
+
     //等待录屏甩出最新bitmap
     private Bitmap getLatest() {
         useScreen = true;
@@ -123,16 +150,21 @@ public class VisualService extends Service {
             Page page = pageList.get(i);
             List<String> featureText = page.getFeatureText();
             List<String> featureImage = page.getFeatureImage();
-            if (featureText != null && featureText.size() > 0) {
-                if (SearchImgUtils.matchText(MainActivity.getInstance().getOcrEngine(), latest, page.getFeatureText(), page.getSuitFeatureTextNum())) {
-                    task.result(new CurrentPageMsg(page));
-                    return;
-                }
-            } else if (featureImage != null && featureImage.size() > 0){
-                if (SearchImgUtils.matchImg(this, latest, featureImage, page.getSuitFeatureImageNum())){
-                    task.result(new CurrentPageMsg(page));
-                    return;
-                }
+            boolean text = false, img = false, nullText = false, nullImg = false;
+            if (featureText != null){
+                text = SearchImgUtils.matchText(MainActivity.getInstance().getOcrEngine(), latest, page.getFeatureText(), page.getSuitFeatureTextNum());
+            } else {
+                nullText = true;
+            }
+            if (featureImage != null) {
+                img = SearchImgUtils.matchImg(this, latest, featureImage, page.getSuitFeatureImageNum());
+            } else {
+                nullImg = true;
+            }
+            if ((text && img) || (nullText && img) || (nullImg && text)){
+                task.result(new CurrentPageMsg(page));
+                latest.recycle();
+                return;
             }
         }
         latest.recycle();
@@ -162,24 +194,9 @@ public class VisualService extends Service {
     public void screenChange(ScreenInfo info) {
         sw = WinUtils.getSW(this);
         sh = WinUtils.getSH(this);
-        if (imgReader != null) {
-            imgReader.close();
-            imgReader = null;
-            initReader();
-        }
-        /*if (projection != null) {
-            projection.stop();
-            projection = null;
-            projection = ((MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE))
-                    .getMediaProjection(code, data);
-        }*/
-        if (display != null) {
-            display.release();
-            display = null;
-            display = projection.createVirtualDisplay("VisualService", sw, sh, WinUtils.getDDpi(this),
-                    DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                    imgReader.getSurface(), null, null);
-        }
+        initMediaProjection();
+        initReader();
+        initDisplay();
     }
 
     @Override
@@ -187,14 +204,14 @@ public class VisualService extends Service {
         // TODO Auto-generated method stub
         super.onDestroy();
         Log.i("TAG", "Service onDestroy");
-        imgReader.close();
-        if (display != null) {
-            display.release();
-            display = null;
-        }
         if (projection != null) {
             projection.stop();
             projection = null;
         }
+        if (display != null) {
+            display.release();
+            display = null;
+        }
+        imgReader.close();
     }
 }

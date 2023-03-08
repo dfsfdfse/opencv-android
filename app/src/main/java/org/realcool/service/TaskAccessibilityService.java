@@ -24,7 +24,10 @@ public class TaskAccessibilityService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
-        EventBus.getDefault().register(this);
+        EventBus aDefault = EventBus.getDefault();
+        if (!aDefault.isRegistered(this)){
+            aDefault.register(this);
+        }
         Log.e("无障碍","服务连接了...");
     }
 

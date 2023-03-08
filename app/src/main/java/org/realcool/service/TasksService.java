@@ -29,8 +29,11 @@ public class TasksService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        List<Page> pageList = PageLoader.loadPage(this, "test.yaml");
-        EventBus.getDefault().register(this);
+        List<Page> pageList = PageLoader.loadPage(this, "source.yaml");
+        EventBus aDefault = EventBus.getDefault();
+        if (!aDefault.isRegistered(this)){
+            aDefault.register(this);
+        }
         task = new MainTask();
         task.setPageList(pageList);
         daYeTask = new DaYeTask(pageList);

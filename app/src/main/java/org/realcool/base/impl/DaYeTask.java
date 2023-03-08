@@ -14,12 +14,16 @@ import java.util.List;
 public class DaYeTask extends CollectTask {
     public DaYeTask(List<Page> pageList){
         super();
-        delay = 100;
+        delay = 1000;
         GetCurrentPageTask getCurrentPageTask = new GetCurrentPageTask(pageList);
         getCurrentPageTask.addOnFinished(()->{
             BaseMsg msg = getCurrentPageTask.getMsg();
             if (msg != null) {
-                Log.e("当前页面", ((CurrentPageMsg)getCurrentPageTask.getMsg()).getCurrentPage().getName());
+                /*Log.e("当前页面", ((CurrentPageMsg)getCurrentPageTask.getMsg()).getCurrentPage().getName());
+                setOpen(false);*/
+                //计算路径
+
+
             }
         });
         add(getCurrentPageTask);

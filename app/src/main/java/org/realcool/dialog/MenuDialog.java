@@ -78,7 +78,10 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
                 }
             }
         };
-        EventBus.getDefault().register(this);
+        EventBus aDefault = EventBus.getDefault();
+        if (!aDefault.isRegistered(this)){
+            aDefault.register(this);
+        }
         cj.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

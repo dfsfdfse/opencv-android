@@ -3,7 +3,6 @@ package org.realcool.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import com.benjaminwan.ocrlibrary.OcrEngine;
 import com.benjaminwan.ocrlibrary.OcrResult;
@@ -85,7 +84,6 @@ public class SearchImgUtils {
                 goodMatch.addLast(m1);
             }
         });
-        Log.e("符合的特征点数", goodMatch.size() + "");
         return point;
     }
 
@@ -93,7 +91,6 @@ public class SearchImgUtils {
     public static MatchPoint boolMatch(TempMat mat) {
         MatchPoint keyPoint = getKeyPoint(mat);
         keyPoint.setMatch(tempInOrigin(keyPoint).getGoodMatch().size() >= MatchPoint.MATCH_NUM);
-        Log.e("特征点", Integer.toString(tempInOrigin(keyPoint).getGoodMatch().size()));
         return keyPoint;
     }
 
@@ -146,7 +143,6 @@ public class SearchImgUtils {
         if (or.getTextBlocks().size() > 0) {
             for (TextBlock tb :
                     or.getTextBlocks()) {
-                Log.e("图片识别出的文字", tb.getText());
                 if (tb.getText().contains(text)) {
                     // 找到符合的第一个点，当前直接跳出函数
                     return new PointMsg(tb.getBoxPoint().get(0), tb.getBoxPoint().get(1), tb.getBoxPoint().get(2), tb.getBoxPoint().get(3));
@@ -175,7 +171,6 @@ public class SearchImgUtils {
      * @return
      */
     public static boolean matchText(OcrEngine engine, Bitmap bitmap, List<String> features, int fitNum) {
-        long start = System.currentTimeMillis();
         OcrResult or = detect(engine, bitmap, .9f);
         ArrayList<TextBlock> textBlocks = or.getTextBlocks();
         if (textBlocks.size() > 0) {
@@ -195,8 +190,6 @@ public class SearchImgUtils {
                     fit++;
                 }
             }
-            long end = System.currentTimeMillis();
-            Log.e("文字搜索性能", (end - start) + "");
             return fit >= fitNum;
         }
         return false;
@@ -204,7 +197,6 @@ public class SearchImgUtils {
 
     public static boolean matchImg(Context context, Bitmap bitmap, List<String> features, int fitNum) {
         int fit = 0;
-        long start = System.currentTimeMillis();
         for (int i = 0; i < features.size(); i++) {
             String s = features.get(i);
             Bitmap img = FileUtils.getBitmapByFileName(context, s);
@@ -215,7 +207,6 @@ public class SearchImgUtils {
                 fit++;
                 if (fit == fitNum) {
                     long end = System.currentTimeMillis();
-                    Log.e("图片搜索性能", (end - start) + "");
                     return true;
                 }
             }

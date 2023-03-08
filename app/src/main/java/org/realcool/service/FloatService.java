@@ -119,6 +119,8 @@ public class FloatService extends Service {
                     w = WinUtils.getSW(FloatService.this);
                     ScreenInfo.getInstance().setScreenHeight(w);
                     ScreenInfo.getInstance().setScreenWidth(h);
+                    floatParams.y = h;
+                    wm.updateViewLayout(fv, floatParams);
                     //顺时针旋转90度
                     break;
                 //顺时针旋转180度

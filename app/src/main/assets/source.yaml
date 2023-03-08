@@ -3,6 +3,7 @@ pages:
     首页:
       闯关模式:
       世界模式:
+        琉璃珍宝:
         军报:
         天选印记:
         任务:
@@ -38,34 +39,32 @@ pages:
   feature:
     首页:
       featureText:
-        - 每日领元宝
-        - 限充
-        - 签到福利
-        - 闯关模式
-        - 世界模式
-        - 联盟征召
-        - 挑战模式
-        - 3
+        - 闯关斩将
+        - 休闲对战
+        - 经典排位
       featureImage:
-      enter:
     世界模式:
-      featureText:
-        - 军报
-        - 天选
-        - 印记
-        - 任务
-        - 3
       featureImage:
-        - images/junbao.jpg
-        - images/renwu.jpg
-        - images/tianxuan.jpg
-      enter:
-        image:
-
-        text:
-          - 世界模式
-          - 联盟征召
-        position:
-
+        - images/shangci.jpg
+        - images/chengci.jpg
+    琉璃珍宝:
+      featureText:
+        - 商人离开
+    矿:
+      featureText:
+        - 铁矿
+    木:
+      featureText:
+        - 伐木场
+    粮:
+      featureText:
+        - 农田
+tasks:
+  打野:
+    route:
+      - 首页
+      - 世界模式
+      - 野怪
+      - 讨伐
 
 
