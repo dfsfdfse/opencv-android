@@ -104,7 +104,8 @@ public abstract class BaseTask {
         waitExec();
         Log.e(getClass().getName(), "开始执行");
         exec();
-        if (finished != null) {
+        if (finished.size() > 0) {
+            getTaskLine().waitRun();
             for (OnFinished onFinished : finished) {
                 onFinished.finished();
             }

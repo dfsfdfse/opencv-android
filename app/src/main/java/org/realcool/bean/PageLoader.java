@@ -51,8 +51,27 @@ public class PageLoader {
                 Page p = list.get(i);
                 if (Objects.equals(p.getName(), o)) {
                     Map map = (Map) page.get(o);
-                    p.setFeatureText((List<String>) map.get("featureText"));
-                    p.setFeatureImage((List<String>) map.get("featureImage"));
+                    List featureText = (List) map.get("featureText");
+                    List featureImage = (List) map.get("featureImage");
+                    if (featureImage != null) {
+                        Object o1 = featureImage.get(featureImage.size() - 1);
+                        if (o1 instanceof Integer) {
+                            p.setSuitFeatureImageNum((Integer) o1);
+                            p.setFeatureImage(featureImage.subList(0, featureImage.size() - 1));
+                        } else {
+                            p.setFeatureImage(featureImage.subList(0, featureImage.size()));
+                        }
+                    }
+                    if (featureText != null) {
+                        p.setFeatureText(featureText.subList(0, featureText.size() - 1));
+                        Object o1 = featureText.get(featureText.size() - 1);
+                        if (o1 instanceof Integer) {
+                            p.setSuitFeatureTextNum((Integer) o1);
+                            p.setFeatureText(featureText.subList(0, featureText.size() - 1));
+                        } else {
+                            p.setFeatureText(featureText.subList(0, featureText.size()));
+                        }
+                    }
                 }
             }
         }

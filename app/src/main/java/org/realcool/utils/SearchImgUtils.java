@@ -27,10 +27,31 @@ import org.realcool.base.msg.PointMsg;
 import org.realcool.bean.TempMat;
 import org.realcool.bean.MatchPoint;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class SearchImgUtils {
+
+    public static Mat getMatByBitmap(Bitmap bitmap) {
+        Mat mat = new Mat();
+        Mat clone = new Mat();
+        Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, clone, Imgproc.COLOR_BGR2GRAY);
+        return clone;
+    }
+
+    /**
+     * @param target 特征图
+     * @param origin 大的图(录屏)
+     * @return
+     */
+    public static boolean matchImg(Bitmap target, Bitmap origin) {
+        Mat tm = getMatByBitmap(target);
+        Mat om = getMatByBitmap(origin);
+        MatchPoint keyPoint = getKeyPoint(new TempMat(om, tm));
+        return tempInOrigin(keyPoint).getGoodMatch().size() >= MatchPoint.MATCH_NUM;
+    }
 
     public static MatchPoint getKeyPoint(TempMat mat) {
         Mat temp = mat.getTemp();
@@ -64,6 +85,7 @@ public class SearchImgUtils {
                 goodMatch.addLast(m1);
             }
         });
+        Log.e("符合的特征点数", goodMatch.size() + "");
         return point;
     }
 
@@ -118,14 +140,6 @@ public class SearchImgUtils {
         return BitmapFactory.decodeResource(context.getResources(), id);
     }
 
-    public static Mat getMatByBitmap(Bitmap bitmap) {
-        Mat mat = new Mat();
-        Mat clone = new Mat();
-        Utils.bitmapToMat(bitmap, mat);
-        bitmap.recycle();
-        Imgproc.cvtColor(mat, clone, Imgproc.COLOR_BGR2GRAY);
-        return clone;
-    }
 
     public static PointMsg searchText(OcrEngine engine, String text, Bitmap bitmap) {
         OcrResult or = detect(engine, bitmap, .9f);
@@ -135,13 +149,10 @@ public class SearchImgUtils {
                 Log.e("图片识别出的文字", tb.getText());
                 if (tb.getText().contains(text)) {
                     // 找到符合的第一个点，当前直接跳出函数
-                    PointMsg sp = new PointMsg(tb.getBoxPoint().get(0), tb.getBoxPoint().get(1), tb.getBoxPoint().get(2), tb.getBoxPoint().get(3));
-                    bitmap.recycle();
-                    return sp;
+                    return new PointMsg(tb.getBoxPoint().get(0), tb.getBoxPoint().get(1), tb.getBoxPoint().get(2), tb.getBoxPoint().get(3));
                 }
             }
         }
-        bitmap.recycle();
         return null;
     }
 
@@ -149,11 +160,67 @@ public class SearchImgUtils {
         OcrResult or = detect(engine, bitmap, .9f);
         if (or.getTextBlocks().size() > 0) {
             PicTextMsg picTextMsg = new PicTextMsg(or.getTextBlocks());
-            bitmap.recycle();
             return picTextMsg;
         }
-        bitmap.recycle();
         return null;
+    }
+
+    /**
+     * 获取bitmap图片内所有文字包含特征文字的数量是否大于 fitNum
+     *
+     * @param engine   ocr引擎
+     * @param bitmap   当前图片的bitmap
+     * @param features 特征文字列表
+     * @param fitNum   满足条件文字数量
+     * @return
+     */
+    public static boolean matchText(OcrEngine engine, Bitmap bitmap, List<String> features, int fitNum) {
+        long start = System.currentTimeMillis();
+        OcrResult or = detect(engine, bitmap, .9f);
+        ArrayList<TextBlock> textBlocks = or.getTextBlocks();
+        if (textBlocks.size() > 0) {
+            StringBuilder builder = new StringBuilder("");
+            int fit = 0, forIndex = 0;
+            int size = textBlocks.size();
+            while (fit < fitNum && forIndex < size && features.size() > fit) {
+                String s = features.get(fit);
+                String text = textBlocks.get(forIndex).getText();
+                forIndex++;
+                if (text.contains(s)) {
+                    fit++;
+                    continue;
+                }
+                builder.append(text).append("\n");
+                if (builder.indexOf(s) != -1) {
+                    fit++;
+                }
+            }
+            long end = System.currentTimeMillis();
+            Log.e("文字搜索性能", (end - start) + "");
+            return fit >= fitNum;
+        }
+        return false;
+    }
+
+    public static boolean matchImg(Context context, Bitmap bitmap, List<String> features, int fitNum) {
+        int fit = 0;
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < features.size(); i++) {
+            String s = features.get(i);
+            Bitmap img = FileUtils.getBitmapByFileName(context, s);
+            boolean b = matchImg(img, bitmap);
+            assert img != null;
+            img.recycle();
+            if (b) {
+                fit++;
+                if (fit == fitNum) {
+                    long end = System.currentTimeMillis();
+                    Log.e("图片搜索性能", (end - start) + "");
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -166,8 +233,6 @@ public class SearchImgUtils {
         Bitmap temp = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         int size = Math.max(bitmap.getHeight(), bitmap.getWidth());
         size = (int) (ocrRatio * size);
-        OcrResult or = engine.detect(bitmap, temp, size);
-        temp.recycle();
-        return or;
+        return engine.detect(bitmap, temp, size);
     }
 }

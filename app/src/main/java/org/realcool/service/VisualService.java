@@ -17,27 +17,22 @@ import android.util.Log;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.opencv.core.Mat;
 import org.realcool.MainActivity;
-import org.realcool.base.impl.CheckPageTask;
-import org.realcool.base.min.ComparePicPointTask;
 import org.realcool.base.min.GetAllTextTask;
-import org.realcool.base.min.GetCurrentTask;
+import org.realcool.base.min.GetCurrentPageTask;
 import org.realcool.base.min.SearchTextTask;
-import org.realcool.base.msg.BaseMsg;
-import org.realcool.base.msg.BitmapMsg;
+import org.realcool.base.msg.CurrentPageMsg;
 import org.realcool.base.msg.PicTextMsg;
 import org.realcool.base.msg.PointMsg;
-import org.realcool.bean.MatchPoint;
 import org.realcool.bean.Page;
-import org.realcool.bean.PageLoader;
 import org.realcool.bean.ScreenInfo;
-import org.realcool.bean.TempMat;
 import org.realcool.utils.SearchImgUtils;
 import org.realcool.utils.WinUtils;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class VisualService extends Service {
     private ImageReader imgReader;
@@ -45,6 +40,10 @@ public class VisualService extends Service {
     private int sh;
     private int code;
     private Intent data;
+    private ReentrantLock lock;
+    private Condition wait;
+    private boolean useScreen;
+    private Image image;
     MediaProjection projection;
     VirtualDisplay display;
 
@@ -55,29 +54,49 @@ public class VisualService extends Service {
         data = intent.getParcelableExtra("data");
         sw = WinUtils.getSW(this);
         sh = WinUtils.getSH(this);
+        lock = new ReentrantLock();
+        wait = lock.newCondition();
         projection = ((MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE))
                 .getMediaProjection(code, data);
-        imgReader = ImageReader.newInstance(sw, sh, PixelFormat.RGBA_8888, 2);
+        initReader();
         display = projection.createVirtualDisplay("VisualService", sw, sh, WinUtils.getDDpi(this),
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 imgReader.getSurface(), null, null);
         return null;
     }
-
-    private Bitmap getLatest() {
-        Image image = imgReader.acquireLatestImage();
-        if (image == null) {
-            Log.e(getClass().getName(), "image为空重新获取图片");
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+    private void initReader(){
+        imgReader = ImageReader.newInstance(sw, sh, PixelFormat.RGBA_8888, 2);
+        imgReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader reader) {
+                Image img = reader.acquireLatestImage();
+                if (img != null){
+                    if (useScreen){
+                        image = img;
+                        lock.lock();
+                        useScreen = false;
+                        wait.signal();
+                        lock.unlock();
+                    } else {
+                        img.close();
+                    }
+                }
             }
-            return getLatest();
+        }, null);
+    }
+    //等待录屏甩出最新bitmap
+    private Bitmap getLatest() {
+        useScreen = true;
+        lock.lock();
+        try {
+            while (useScreen) wait.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
         int width = image.getWidth();
         int height = image.getHeight();
-        Log.e("img size", "width:" + width + "height:" + height);
         final Image.Plane[] planes = image.getPlanes();
         final ByteBuffer buffer = planes[0].getBuffer();
         int pixelStride = planes[0].getPixelStride();
@@ -90,42 +109,51 @@ public class VisualService extends Service {
         return Bitmap.createBitmap(bitmap, 0, 0, width, height);
     }
 
+    /*------------------------------------------------------------------*/
+
+    /**
+     * 检测当前页面是哪个页面
+     * @param task
+     */
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void comparePicPoint(ComparePicPointTask task) {
-        Bitmap target = SearchImgUtils.getBitmapById(this, task.getImg());
-        Mat temp = SearchImgUtils.getMatByBitmap(target);
-        Mat origin = SearchImgUtils.getMatByBitmap(getLatest());
-        TempMat tempMat = new TempMat(origin, temp);
-        MatchPoint matchPoint = SearchImgUtils.boolMatch(tempMat);
-        PointMsg msg = null;
-        if (matchPoint.isMatch()) {
-            msg = SearchImgUtils.getPoints(matchPoint, tempMat);
+    public void getCurrentPage(GetCurrentPageTask task) {
+        Bitmap latest = getLatest();
+        List<Page> pageList = task.getPageList();
+        for (int i = 0; i < pageList.size(); i++) {
+            Page page = pageList.get(i);
+            List<String> featureText = page.getFeatureText();
+            List<String> featureImage = page.getFeatureImage();
+            if (featureText != null && featureText.size() > 0) {
+                if (SearchImgUtils.matchText(MainActivity.getInstance().getOcrEngine(), latest, page.getFeatureText(), page.getSuitFeatureTextNum())) {
+                    task.result(new CurrentPageMsg(page));
+                    return;
+                }
+            } else if (featureImage != null && featureImage.size() > 0){
+                if (SearchImgUtils.matchImg(this, latest, featureImage, page.getSuitFeatureImageNum())){
+                    task.result(new CurrentPageMsg(page));
+                    return;
+                }
+            }
         }
-        task.result(msg);
-    }
-    //todo 判断当前所在页面是不是指定页面 page getLast
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void checkPage(CheckPageTask task){
-
-    }
-
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void getCurrentBitmap(GetCurrentTask task){
-        task.result(new BitmapMsg(getLatest()));
+        latest.recycle();
+        task.result(null);
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void searchText(SearchTextTask task) {
-        PointMsg msg = SearchImgUtils.searchText(MainActivity.getInstance().getOcrEngine(), task.getText(), getLatest());
+        Bitmap latest = getLatest();
+        PointMsg msg = SearchImgUtils.searchText(MainActivity.getInstance().getOcrEngine(), task.getText(), latest);
+        latest.recycle();
         task.result(msg);
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void getAllText(GetAllTextTask task){
-        PicTextMsg msg = SearchImgUtils.searchAllText(MainActivity.getInstance().getOcrEngine(), getLatest());
+    public void getAllText(GetAllTextTask task) {
+        Bitmap latest = getLatest();
+        PicTextMsg msg = SearchImgUtils.searchAllText(MainActivity.getInstance().getOcrEngine(), latest);
+        latest.recycle();
         task.result(msg);
     }
-
 
     /**
      * 横竖屏切换
@@ -134,10 +162,10 @@ public class VisualService extends Service {
     public void screenChange(ScreenInfo info) {
         sw = WinUtils.getSW(this);
         sh = WinUtils.getSH(this);
-        if (imgReader!=null){
+        if (imgReader != null) {
             imgReader.close();
             imgReader = null;
-            imgReader = ImageReader.newInstance(sw, sh,PixelFormat.RGBA_8888, 2);
+            initReader();
         }
         /*if (projection != null) {
             projection.stop();

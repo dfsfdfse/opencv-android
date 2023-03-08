@@ -29,11 +29,11 @@ public class TasksService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        List<Page> pageList = PageLoader.loadPage(this, "test.yaml");
         EventBus.getDefault().register(this);
-        List<Page> page = PageLoader.loadPage(this, "source.yaml");
         task = new MainTask();
-        task.setPageList(page);
-        daYeTask = new DaYeTask();
+        task.setPageList(pageList);
+        daYeTask = new DaYeTask(pageList);
         daYeTask.setOpen(false);
         task.add(daYeTask);
     }

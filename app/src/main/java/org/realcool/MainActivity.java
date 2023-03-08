@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         initOpenCV();
         checkPermission();
         startScreenRecording();
-        PageLoader.loadPage(this, "source.yaml");
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
