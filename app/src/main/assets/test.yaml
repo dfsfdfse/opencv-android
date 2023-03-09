@@ -2,10 +2,16 @@ pages:
   relation:
     首页:
       应用1:
+        设置:
   feature:
     首页:
-      featureImage:
-        - images/gmail.jpg
+      featureText:
+        - 最近没有
     应用1:
       featureText:
-        - 照片
+        - 文件
+    设置:
+      featureText:
+        - 设备
+      enterText: 设置
+      tapOffsetY: -50

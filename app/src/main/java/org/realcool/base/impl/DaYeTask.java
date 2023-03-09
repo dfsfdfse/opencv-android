@@ -3,29 +3,33 @@ package org.realcool.base.impl;
 import android.util.Log;
 
 import org.realcool.base.CollectTask;
-import org.realcool.base.CommandTask;
+import org.realcool.base.MainTask;
 import org.realcool.base.min.GetCurrentPageTask;
-import org.realcool.base.msg.BaseMsg;
-import org.realcool.base.msg.CurrentPageMsg;
 import org.realcool.bean.Page;
 
-import java.util.List;
-
 public class DaYeTask extends CollectTask {
-    public DaYeTask(List<Page> pageList){
+    public DaYeTask(MainTask task, Page target) {
         super();
         delay = 1000;
-        GetCurrentPageTask getCurrentPageTask = new GetCurrentPageTask(pageList);
-        getCurrentPageTask.addOnFinished(()->{
-            BaseMsg msg = getCurrentPageTask.getMsg();
-            if (msg != null) {
-                /*Log.e("当前页面", ((CurrentPageMsg)getCurrentPageTask.getMsg()).getCurrentPage().getName());
-                setOpen(false);*/
-                //计算路径
-
-
+        add(new GetCurrentPageTask(task.getPageList()).addOnFinished(cur -> {
+            //得到当前页面
+            Page currentPage = cur.getCurrentPage();
+            if (currentPage!= null){
+                Log.e(currentPage.getName(), "当前页面");
+                currentPage.toTargetPage(this, target);
+                addOnFinished(_this -> {
+                    Log.e("DaYeTask", "完成");
+                    //回到第一个任务
+                    leftOne();
+                });
             }
-        });
-        add(getCurrentPageTask);
+            setOpen(false);
+        }));
     }
+
+    private void leftOne() {
+        children.removeIf(item -> children.getFirst() != item);
+    }
+
+
 }

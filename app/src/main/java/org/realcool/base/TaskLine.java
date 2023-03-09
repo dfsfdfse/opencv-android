@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.realcool.bean.Page;
 
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -14,12 +15,29 @@ public class TaskLine implements Runnable{
     private boolean running;
     private final MainTask task;
     private Page currentPage;
+    private List<Page> pageList;
 
     public TaskLine(MainTask task) {
         super();
         this.task = task;
         this.lock = new ReentrantLock();
         this.pos = lock.newCondition();
+    }
+
+    public List<Page> getPageList() {
+        return pageList;
+    }
+
+    public void setPageList(List<Page> pageList) {
+        this.pageList = pageList;
+    }
+
+    public Page getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(Page currentPage) {
+        this.currentPage = currentPage;
     }
 
     public boolean isRunning() {
@@ -29,7 +47,6 @@ public class TaskLine implements Runnable{
     @Override
     public void run() {
         Log.e(getClass().getName(), "开始运行run");
-
         task.run();
     }
 

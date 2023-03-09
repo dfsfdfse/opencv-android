@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.realcool.R;
+import org.realcool.base.CollectTask;
 import org.realcool.service.event.CheckedEvent;
 import org.realcool.service.event.TaskEvent;
 import org.realcool.utils.WinUtils;
@@ -79,7 +80,7 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
             }
         };
         EventBus aDefault = EventBus.getDefault();
-        if (!aDefault.isRegistered(this)){
+        if (!aDefault.isRegistered(this)) {
             aDefault.register(this);
         }
         cj.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -117,7 +118,12 @@ public class MenuDialog extends BaseServiceDialog implements View.OnClickListene
     @Subscribe
     public void setCheckState(CheckedEvent event) {
         Message msg = new Message();
-        msg.what = event.isChecked() ? 0 : 1;
+        switch (event.getType()) {
+            case CollectTask.DAYE_TYPE:
+                msg.what = event.isChecked() ? 0 : 1;
+            case CollectTask.CAIJI_TYPE:
+                msg.what = event.isChecked() ? 2 : 3;
+        }
         handler.sendMessage(msg);
     }
 }

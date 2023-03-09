@@ -2,6 +2,7 @@ package org.realcool.base;
 
 import android.util.Log;
 
+import org.realcool.bean.Page;
 import org.realcool.utils.IdUtils;
 
 import java.util.LinkedList;
@@ -22,20 +23,34 @@ public abstract class BaseTask {
 
     private boolean open;
 
+    private boolean waitOther;
+
     private BaseTask rootParent;
 
     protected TaskLine taskLine;
 
-    private LinkedList<OnFinished> finished;
-
-    public void addOnFinished(OnFinished finish) {
-        this.finished.addLast(finish);
-    }
+    private final LinkedList<OnFinished> finished;
 
     public BaseTask() {
         this.id = IdUtils.genId();
-        this.finished = new LinkedList<>();
         this.open = true;
+        this.finished = new LinkedList<>();
+    }
+
+    public void setCurrentPage(Page currentPage){
+        getTaskLine().setCurrentPage(currentPage);
+    }
+
+    public Page getCurrentPage(){
+        return getTaskLine().getCurrentPage();
+    }
+
+    public LinkedList<OnFinished> getFinished() {
+        return finished;
+    }
+
+    public void setWaitOther(boolean waitOther) {
+        this.waitOther = waitOther;
     }
 
     public BaseTask getParent() {
@@ -98,15 +113,23 @@ public abstract class BaseTask {
         return id;
     }
 
+    public BaseTask addOnFinished(OnFinished finish) {
+        this.finished.addLast(finish);
+        return this;
+    }
+
     protected void run() {
         getTaskLine().waitRun();
         working = true;
         waitExec();
         exec();
-        if (finished.size() > 0) {
-            getTaskLine().waitRun();
+        if (finished.size() > 0){
+            if (waitOther){
+                Log.e(getClass().getName(), "等待指令接受结果");
+                getTaskLine().stopWait();
+            }
             for (OnFinished onFinished : finished) {
-                onFinished.finished();
+                onFinished.finished(this);
             }
         }
         if (loop && open) run();
@@ -148,10 +171,11 @@ public abstract class BaseTask {
      * 让本任务的任务线停止运行
      */
     public void stopLine() {
+        Log.e(getClass().getName(), "发送停止指令");
         getTaskLine().stop();
     }
 
     public interface OnFinished{
-        void finished();
+        void finished(BaseTask task);
     }
 }

@@ -5,8 +5,8 @@ import android.util.Log;
 import java.util.LinkedList;
 
 public abstract class CollectTask extends BaseTask {
-    public static final Integer DAYE_TYPE = 1;
-    public static final Integer CAIJI_TYPE = 2;
+    public static final int DAYE_TYPE = 1;
+    public static final int CAIJI_TYPE = 2;
 
     protected final LinkedList<BaseTask> children;
 
@@ -24,9 +24,14 @@ public abstract class CollectTask extends BaseTask {
         int size = children.size();
         if (size > index) {
             BaseTask task = children.get(index);
-            if (task.isOpen()) task.run();
+            if (task.isOpen()) {
+                task.run();
+                Log.e(task.getClass().getName(), "执行完毕");
+                Log.e(getClass().getName(), "childrenSize:"+children.size());
+            }
             else closeChild++;
             index++;
+            exec();
         } else {
             closeChild = 0;
             index = 0;
@@ -42,6 +47,7 @@ public abstract class CollectTask extends BaseTask {
     }
 
     public void add(BaseTask task) {
+        Log.e(getClass().getName(), "添加children:" + task.getClass().getName());
         task.setParent(this);
         children.addLast(task);
     }

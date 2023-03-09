@@ -51,8 +51,18 @@ public class PageLoader {
                 Page p = list.get(i);
                 if (Objects.equals(p.getName(), o)) {
                     Map map = (Map) page.get(o);
-                    List featureText = (List) map.get("featureText");
-                    List featureImage = (List) map.get("featureImage");
+                    List featureText = get("featureText", map);
+                    List featureImage = get("featureImage", map);
+                    String enterText = get("enterText", map);
+                    String enterImage = get("enterImage", map);
+                    Integer tapOffsetX = get("tapOffsetX", map);
+                    Integer tapOffsetY = get("tapOffsetY", map);
+                    tapOffsetX = tapOffsetX == null ? 0 : tapOffsetX;
+                    tapOffsetY = tapOffsetY == null ? 0 : tapOffsetY;
+                    p.setEnterText(enterText);
+                    p.setEnterImage(enterImage);
+                    p.setTapOffsetX(tapOffsetX);
+                    p.setTapOffsetY(tapOffsetY);
                     if (featureImage != null) {
                         Object o1 = featureImage.get(featureImage.size() - 1);
                         if (o1 instanceof Integer) {
@@ -75,5 +85,13 @@ public class PageLoader {
                 }
             }
         }
+    }
+
+    private static <T> T get(String type, Map map) {
+        if (map != null) {
+            Object o = map.get(type);
+            return o != null ? (T) o : null;
+        }
+        return null;
     }
 }

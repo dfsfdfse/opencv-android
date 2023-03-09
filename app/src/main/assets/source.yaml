@@ -9,6 +9,7 @@ pages:
         任务:
         联盟:
         成就:
+          城:
         地图:
         主城:
         聊天:
@@ -47,6 +48,13 @@ pages:
       featureImage:
         - images/shangci.jpg
         - images/chengci.jpg
+    成就:
+      featureText:
+        - 成就
+    主城:
+      featureText:
+        - 建造城池
+        - 英雄辈出
     琉璃珍宝:
       featureText:
         - 商人离开

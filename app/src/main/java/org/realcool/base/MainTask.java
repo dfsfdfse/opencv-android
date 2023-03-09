@@ -1,7 +1,8 @@
 package org.realcool.base;
 
+import android.util.Log;
+
 import org.realcool.bean.Page;
-import org.realcool.bean.PageLoader;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -24,10 +25,6 @@ public class MainTask {
         return currentPage;
     }
 
-    public void setCurrentPage(Page currentPage) {
-        this.currentPage = currentPage;
-    }
-
     public List<Page> getPageList() {
         return pageList;
     }
@@ -48,8 +45,8 @@ public class MainTask {
             closeChild = 0;
         }
         if (size == closeChild) {
-            taskLine.stop();
-            taskLine.waitRun();
+            Log.e("MainTask", "全线关闭(open)等待...");
+            taskLine.stopWait();
         }
         run();
     }

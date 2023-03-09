@@ -7,8 +7,14 @@ import org.realcool.bean.Page;
  * 判断当前所在页面是不是指定页面
  */
 public class CheckPageTask extends CommandTask {
-    private Page page;
-    public CheckPageTask(Page page){
+    private final Page page;
+
+    public CheckPageTask(Page page) {
         super();
+        this.page = page;
+    }
+
+    public Page getPage() {
+        return page;
     }
 }

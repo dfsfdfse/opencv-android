@@ -18,15 +18,22 @@ import android.util.Log;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.opencv.core.Mat;
 import org.realcool.MainActivity;
+import org.realcool.base.impl.CheckPageTask;
 import org.realcool.base.min.GetAllTextTask;
 import org.realcool.base.min.GetCurrentPageTask;
+import org.realcool.base.min.SearchImgTask;
 import org.realcool.base.min.SearchTextTask;
+import org.realcool.base.msg.BaseMsg;
 import org.realcool.base.msg.CurrentPageMsg;
 import org.realcool.base.msg.PicTextMsg;
 import org.realcool.base.msg.PointMsg;
+import org.realcool.bean.MatchPoint;
 import org.realcool.bean.Page;
 import org.realcool.bean.ScreenInfo;
+import org.realcool.bean.TempMat;
+import org.realcool.utils.FileUtils;
 import org.realcool.utils.SearchImgUtils;
 import org.realcool.utils.WinUtils;
 
@@ -52,7 +59,7 @@ public class VisualService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         EventBus aDefault = EventBus.getDefault();
-        if (!aDefault.isRegistered(this)){
+        if (!aDefault.isRegistered(this)) {
             aDefault.register(this);
         }
         code = intent.getIntExtra("code", -1);
@@ -67,8 +74,9 @@ public class VisualService extends Service {
         initDisplay();
         return null;
     }
-    private void initMediaProjection(){
-        if (projection != null){
+
+    private void initMediaProjection() {
+        if (projection != null) {
             projection.stop();
             projection = null;
         }
@@ -76,8 +84,8 @@ public class VisualService extends Service {
                 .getMediaProjection(code, data);
     }
 
-    private void initReader(){
-        if (imgReader!=null){
+    private void initReader() {
+        if (imgReader != null) {
             imgReader.close();
             imgReader = null;
         }
@@ -86,8 +94,8 @@ public class VisualService extends Service {
             @Override
             public void onImageAvailable(ImageReader reader) {
                 Image img = reader.acquireLatestImage();
-                if (img != null){
-                    if (useScreen){
+                if (img != null) {
+                    if (useScreen) {
                         image = img;
                         lock.lock();
                         useScreen = false;
@@ -101,8 +109,8 @@ public class VisualService extends Service {
         }, handler);
     }
 
-    private void initDisplay(){
-        if (display != null){
+    private void initDisplay() {
+        if (display != null) {
             display.release();
             display = null;
         }
@@ -136,39 +144,55 @@ public class VisualService extends Service {
         return Bitmap.createBitmap(bitmap, 0, 0, width, height);
     }
 
+    private boolean checkPage(Page page, Bitmap latest) {
+        List<String> featureImage = page.getFeatureImage();
+        List<String> featureText = page.getFeatureText();
+        boolean text = false, img = false, nullText = false, nullImg = false;
+        if (featureText != null) {
+            text = SearchImgUtils.matchText(MainActivity.getInstance().getOcrEngine(), latest, page.getFeatureText(), page.getSuitFeatureTextNum());
+        } else {
+            nullText = true;
+        }
+        if (featureImage != null) {
+            img = SearchImgUtils.matchImg(this, latest, featureImage, page.getSuitFeatureImageNum());
+        } else {
+            nullImg = true;
+        }
+        return (text && img) || (nullText && img) || (nullImg && text);
+    }
+
     /*------------------------------------------------------------------*/
 
     /**
      * 检测当前页面是哪个页面
+     * 通过taskLine去获取当前页面
      * @param task
      */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void getCurrentPage(GetCurrentPageTask task) {
+        Page currentPage = task.getCurrentPage();
         Bitmap latest = getLatest();
-        List<Page> pageList = task.getPageList();
-        for (int i = 0; i < pageList.size(); i++) {
-            Page page = pageList.get(i);
-            List<String> featureText = page.getFeatureText();
-            List<String> featureImage = page.getFeatureImage();
-            boolean text = false, img = false, nullText = false, nullImg = false;
-            if (featureText != null){
-                text = SearchImgUtils.matchText(MainActivity.getInstance().getOcrEngine(), latest, page.getFeatureText(), page.getSuitFeatureTextNum());
-            } else {
-                nullText = true;
+        if (currentPage == null) {
+            boolean flag = false;
+            List<Page> pageList = task.getPageList();
+            for (int i = 0; i < pageList.size(); i++) {
+                Page page = pageList.get(i);
+                if(checkPage(page, latest)){
+                    task.setCurrentPage(page);
+                    flag = true;
+                    break;
+                }
             }
-            if (featureImage != null) {
-                img = SearchImgUtils.matchImg(this, latest, featureImage, page.getSuitFeatureImageNum());
+            if (!flag) task.setCurrentPage(null);
+            task.result(null);
+        } else {
+            if(checkPage(currentPage, latest)){
+                task.result(null);
             } else {
-                nullImg = true;
-            }
-            if ((text && img) || (nullText && img) || (nullImg && text)){
-                task.result(new CurrentPageMsg(page));
-                latest.recycle();
-                return;
+                task.setCurrentPage(null);
+                getCurrentPage(task);
             }
         }
-        latest.recycle();
-        task.result(null);
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -177,6 +201,25 @@ public class VisualService extends Service {
         PointMsg msg = SearchImgUtils.searchText(MainActivity.getInstance().getOcrEngine(), task.getText(), latest);
         latest.recycle();
         task.result(msg);
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void searchImage(SearchImgTask task) {
+        Bitmap target = FileUtils.getBitmapByFileName(this, task.getImg());
+        Bitmap latest = getLatest();
+        Mat temp = SearchImgUtils.getMatByBitmap(target);
+        Mat origin = SearchImgUtils.getMatByBitmap(latest);
+        TempMat mat = new TempMat(origin, temp);
+        MatchPoint point = SearchImgUtils.boolMatch(mat);
+        assert target != null;
+        target.recycle();
+        latest.recycle();
+        if (point.isMatch()){
+            PointMsg points = SearchImgUtils.getPoints(point, mat);
+            task.result(points);
+        } else {
+            task.result(null);
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)

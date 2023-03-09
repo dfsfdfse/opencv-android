@@ -1,5 +1,14 @@
 package org.realcool.bean;
 
+import android.util.Log;
+
+import org.realcool.base.CollectTask;
+import org.realcool.base.CommandTask;
+import org.realcool.base.min.SearchImgTask;
+import org.realcool.base.min.SearchTextTask;
+import org.realcool.base.min.TapTask;
+import org.realcool.base.msg.PointMsg;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +31,38 @@ public class Page {
     //点击的坐标欸子
     private Integer enterX;
 
+    private Integer outX;
+
     private Integer enterY;
 
-    private List<String> enterText;
+    private Integer outY;
 
-    private List<String> enterImage;
+    private Integer tapOffsetX;
+
+    private Integer tapOffsetOutX;
+
+    private Integer tapOffsetY;
+
+    private Integer tapOffsetOutY;
+
+    private String enterText;
+
+    private String outText;
+
+    private String enterImage;
+
+    private String outImage;
     //其他进入方式执行
     private ExtEnter enter;
 
-    private CheckCurrent boolCurrent;
+    private ExtOut out;
+
+    @Override
+    public String toString() {
+        return "Page{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 
     public Page(String name) {
         this.name = name;
@@ -39,28 +71,92 @@ public class Page {
         this.suitFeatureTextNum = 1;
     }
 
-    public List<String> getEnterText() {
+    public Integer getOutX() {
+        return outX;
+    }
+
+    public void setOutX(Integer outX) {
+        this.outX = outX;
+    }
+
+    public Integer getOutY() {
+        return outY;
+    }
+
+    public void setOutY(Integer outY) {
+        this.outY = outY;
+    }
+
+    public Integer getTapOffsetOutX() {
+        return tapOffsetOutX;
+    }
+
+    public void setTapOffsetOutX(Integer tapOffsetOutX) {
+        this.tapOffsetOutX = tapOffsetOutX;
+    }
+
+    public Integer getTapOffsetOutY() {
+        return tapOffsetOutY;
+    }
+
+    public void setTapOffsetOutY(Integer tapOffsetOutY) {
+        this.tapOffsetOutY = tapOffsetOutY;
+    }
+
+    public String getOutText() {
+        return outText;
+    }
+
+    public void setOutText(String outText) {
+        this.outText = outText;
+    }
+
+    public String getOutImage() {
+        return outImage;
+    }
+
+    public void setOutImage(String outImage) {
+        this.outImage = outImage;
+    }
+
+    public ExtOut getOut() {
+        return out;
+    }
+
+    public void setOut(ExtOut out) {
+        this.out = out;
+    }
+
+    public Integer getTapOffsetX() {
+        return tapOffsetX;
+    }
+
+    public void setTapOffsetX(Integer tapOffsetX) {
+        this.tapOffsetX = tapOffsetX;
+    }
+
+    public Integer getTapOffsetY() {
+        return tapOffsetY;
+    }
+
+    public void setTapOffsetY(Integer tapOffsetY) {
+        this.tapOffsetY = tapOffsetY;
+    }
+
+    public String getEnterText() {
         return enterText;
     }
 
-    public void setEnterText(List<String> enterText) {
+    public void setEnterText(String enterText) {
         this.enterText = enterText;
     }
 
-    public List<String> getEnterImage() {
+    public String getEnterImage() {
         return enterImage;
     }
 
-    public void setEnterImage(List<String> enterImage) {
+    public void setEnterImage(String enterImage) {
         this.enterImage = enterImage;
-    }
-
-    public CheckCurrent getBoolCurrent() {
-        return boolCurrent;
-    }
-
-    public void setBoolCurrent(CheckCurrent boolCurrent) {
-        this.boolCurrent = boolCurrent;
     }
 
     public Integer getSuitFeatureImageNum() {
@@ -136,22 +232,92 @@ public class Page {
     }
 
     public void add(Page page) {
+        page.setParent(this);
         children.add(page);
     }
 
     /**
      * 进入当前页面的方式
      */
-    public void enter(){
+    public void enter(CollectTask task){
         // 通过点击坐标点的按钮
         if (enterX != null && enterY != null){
-
+            task.add(new TapTask(enterX, enterY));
         } else if (enterText != null){
-
+            task.add(new SearchTextTask(enterText).addOnFinished(res->{
+                CommandTask r = (CommandTask) res;
+                addTapTask(task, r);
+            }));
         } else if (enterImage != null){
-
+            task.add(new SearchImgTask(enterImage).addOnFinished(res->{
+                CommandTask r = (CommandTask) res;
+                addTapTask(task, r);
+            }));
         } else if (enter != null) {
             enter.execExt();
+        } else {
+            Log.e(getClass().getName(), "无进入页面的方法");
+        }
+    }
+
+    private void addTapTask(CollectTask task, CommandTask r){
+        PointMsg msg =null;
+        if (r.getMsg() != null){
+            msg = (PointMsg) r.getMsg();
+            enterX = msg.getX();
+            enterY = msg.getY();
+            task.add(new TapTask(enterX + tapOffsetX, enterY + tapOffsetY));
+        } else {
+            //todo 未获取到坐标
+            Log.e(getClass().getName(), "未获取到坐标");
+        }
+    }
+
+    /**
+     * 返回父级
+     */
+    public void out(CollectTask task){
+        // 通过点击坐标点的按钮
+        if (outX != null && outY != null){
+            task.add(new TapTask(outX, outY));
+        } else if (outText != null){
+            task.add(new SearchTextTask(outText).addOnFinished(res->{
+                Log.e("搜索", "searchTextTask");
+                CommandTask r = (CommandTask) res;
+                addTapTask(task, r);
+            }));
+        } else if (outImage != null){
+            task.add(new SearchImgTask(outImage).addOnFinished(res->{
+                CommandTask r = (CommandTask) res;
+                addTapTask(task, r);
+            }));
+        } else if (out != null) {
+            out.execOut();
+        } else {
+            Log.e(getClass().getName(), "无返回上级方法");
+        }
+    }
+
+    //当前页面到目标页面
+    public void toTargetPage(CollectTask task, Page target){
+        toTargetPage(task, this, target, null);
+    }
+
+    private void toTargetPage(CollectTask task,Page current, Page target, List<Page> routes){
+        if (current == target) return;
+        if (routes == null) routes = startToEnd(current, target);
+        int i = routes.indexOf(current);
+        if (i != -1 && i < routes.size() - 1){
+            Page node = routes.get(i + 1);
+            if (current.parent == node) {
+                current.out(task);
+            } else {
+                node.enter(task);
+            }
+            toTargetPage(task, node, target, routes);
+        } else {
+            //重新找路
+            toTargetPage(task, current, target, null);
         }
     }
 
@@ -167,24 +333,26 @@ public class Page {
         getRouteToRoot(start, startRoute);
         getRouteToRoot(end, endRoute);
         Page intersect = null;
-        boolean flag = false;
+        int index = 0;
         List<Page> res = new ArrayList<>();
-        for (int i = startRoute.size() - 1; i >= 0; i--) {
-            Page page = startRoute.get(i);
-            if (flag || endRoute.contains(intersect = page)){
-                flag = true;
+        for (int i = endRoute.size() - 1; i >= 0; i--) {
+            Page page = endRoute.get(i);
+            if (!startRoute.contains(page)) {
                 res.add(page);
+                if (index == 0) index = i + 1;
             }
         }
-        res.addAll(endRoute.subList(endRoute.indexOf(intersect) + 1, endRoute.size()));
-        return res;
+        List<Page> pages = startRoute.subList(0, index);
+        pages.addAll(res);
+        Log.e("获得路径", pages.toString());
+        return pages;
     }
 
-    public List<Page> toTarget(Page target){
+    public List<Page> toTargetRoutes(Page target){
         return startToEnd(this, target);
     }
 
-    public List<Page> toPage(Page target){
+    public List<Page> targetToCurrentRoutes(Page target){
         return startToEnd(target, this);
     }
 
@@ -195,16 +363,11 @@ public class Page {
         }
     }
 
-    public interface CheckCurrent{
-        /**
-         * 校验Page是否是当前页面
-         * @return
-         */
-        boolean isCurrent();
+    public interface ExtEnter{
+        void execExt();
     }
 
-    public interface ExtEnter{
-
-        void execExt();
+    public interface ExtOut{
+        void execOut();
     }
 }
