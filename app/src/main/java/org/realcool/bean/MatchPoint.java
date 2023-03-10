@@ -7,10 +7,13 @@ import org.opencv.core.MatOfKeyPoint;
 import java.util.LinkedList;
 
 public class MatchPoint {
+    public static final int TYPE_ORB = 1;
+
+    public static final int TYPE_SIFT = 2;
     //比对的时候 ndr ratio值
-    public static final float NDR_RATIO = 0.65f;
+    public static final float NDR_RATIO = 0.45f;
     //特征点符合数
-    public static final int MATCH_NUM = 10;
+    public static final int MATCH_NUM = 5;
     //是否图片符合
     private boolean match;
 
@@ -24,12 +27,15 @@ public class MatchPoint {
 
     private LinkedList<DMatch> goodMatch;
 
+    private int detectType;
+
     public MatchPoint() {
         this.temp = new Mat();
         this.origin = new Mat();
         this.tempK = new MatOfKeyPoint();
         this.originK = new MatOfKeyPoint();
         this.goodMatch = new LinkedList<>();
+        this.detectType = TYPE_SIFT;
     }
 
     public MatchPoint(boolean match, Mat temp, Mat origin, MatOfKeyPoint tempK, MatOfKeyPoint originK) {
@@ -38,6 +44,14 @@ public class MatchPoint {
         this.origin = origin;
         this.tempK = tempK;
         this.originK = originK;
+    }
+
+    public int getDetectType() {
+        return detectType;
+    }
+
+    public void setDetectType(int detectType) {
+        this.detectType = detectType;
     }
 
     public LinkedList<DMatch> getGoodMatch() {

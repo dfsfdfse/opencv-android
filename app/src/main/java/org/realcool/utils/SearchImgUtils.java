@@ -3,6 +3,7 @@ package org.realcool.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import com.benjaminwan.ocrlibrary.OcrEngine;
 import com.benjaminwan.ocrlibrary.OcrResult;
@@ -18,7 +19,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.features2d.BFMatcher;
 import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.ORB;
 import org.opencv.features2d.SIFT;
 import org.opencv.imgproc.Imgproc;
 import org.realcool.base.msg.PicTextMsg;
@@ -34,10 +37,8 @@ public class SearchImgUtils {
 
     public static Mat getMatByBitmap(Bitmap bitmap) {
         Mat mat = new Mat();
-        Mat clone = new Mat();
         Utils.bitmapToMat(bitmap, mat);
-        Imgproc.cvtColor(mat, clone, Imgproc.COLOR_BGR2GRAY);
-        return clone;
+        return mat;
     }
 
     /**
@@ -56,11 +57,21 @@ public class SearchImgUtils {
         Mat temp = mat.getTemp();
         Mat origin = mat.getOriginal();
         MatchPoint point = new MatchPoint();
-        SIFT sift = SIFT.create();
-        sift.detect(temp, point.getTempK());
-        sift.detect(origin, point.getOriginK());
-        sift.compute(temp, point.getTempK(), point.getTemp());
-        sift.compute(origin, point.getOriginK(), point.getOrigin());
+        switch (point.getDetectType()) {
+            case MatchPoint.TYPE_ORB:
+                ORB orb = ORB.create();
+                orb.detect(temp, point.getTempK());
+                orb.detect(origin, point.getOriginK());
+                orb.compute(temp, point.getTempK(), point.getTemp());
+                orb.compute(origin, point.getOriginK(), point.getOrigin());
+                break;
+            case MatchPoint.TYPE_SIFT:
+                SIFT sift = SIFT.create();
+                sift.detect(temp, point.getTempK());
+                sift.detect(origin, point.getOriginK());
+                sift.compute(temp, point.getTempK(), point.getTemp());
+                sift.compute(origin, point.getOriginK(), point.getOrigin());
+        }
         return point;
     }
 
@@ -68,12 +79,19 @@ public class SearchImgUtils {
         Mat resT = point.getTemp();
         Mat resO = point.getOrigin();
         LinkedList<MatOfDMatch> matches = new LinkedList<>();
-        DescriptorMatcher descriptorMatcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED);
-        /**
-         * knnMatch方法的作用就是在给定特征描述集合中寻找最佳匹配
-         * 使用KNN-matching算法，令K=2，则每个match得到两个最接近的descriptor，然后计算最接近距离和次接近距离之间的比值，当比值大于既定值时，才作为最终match。
-         */
-        descriptorMatcher.knnMatch(resT, resO, matches, 2);
+        switch (point.getDetectType()) {
+            case MatchPoint.TYPE_ORB:
+                BFMatcher bfMatcher = BFMatcher.create(BFMatcher.BRUTEFORCE_HAMMING);
+                bfMatcher.knnMatch(resT, resO, matches, 2);
+                break;
+            /**
+             * knnMatch方法的作用就是在给定特征描述集合中寻找最佳匹配
+             * 使用KNN-matching算法，令K=2，则每个match得到两个最接近的descriptor，然后计算最接近距离和次接近距离之间的比值，当比值大于既定值时，才作为最终match。
+             */
+            case MatchPoint.TYPE_SIFT:
+                DescriptorMatcher descriptorMatcher = DescriptorMatcher.create(DescriptorMatcher.FLANNBASED);
+                descriptorMatcher.knnMatch(resT, resO, matches, 2);
+        }
         LinkedList<DMatch> goodMatch = point.getGoodMatch();
         //对匹配结果进行筛选，依据distance进行筛选
         matches.forEach(match -> {
@@ -84,6 +102,7 @@ public class SearchImgUtils {
                 goodMatch.addLast(m1);
             }
         });
+        Log.e("符合数量", goodMatch.size() + "");
         return point;
     }
 
@@ -133,13 +152,8 @@ public class SearchImgUtils {
         return null;
     }
 
-    public static Bitmap getBitmapById(Context context, int id) {
-        return BitmapFactory.decodeResource(context.getResources(), id);
-    }
-
-
     public static PointMsg searchText(OcrEngine engine, String text, Bitmap bitmap) {
-        OcrResult or = detect(engine, bitmap, .9f);
+        OcrResult or = detect(engine, bitmap, .6f);
         if (or.getTextBlocks().size() > 0) {
             for (TextBlock tb :
                     or.getTextBlocks()) {
@@ -153,7 +167,7 @@ public class SearchImgUtils {
     }
 
     public static PicTextMsg searchAllText(OcrEngine engine, Bitmap bitmap) {
-        OcrResult or = detect(engine, bitmap, .9f);
+        OcrResult or = detect(engine, bitmap, .6f);
         if (or.getTextBlocks().size() > 0) {
             PicTextMsg picTextMsg = new PicTextMsg(or.getTextBlocks());
             return picTextMsg;
@@ -171,7 +185,7 @@ public class SearchImgUtils {
      * @return
      */
     public static boolean matchText(OcrEngine engine, Bitmap bitmap, List<String> features, int fitNum) {
-        OcrResult or = detect(engine, bitmap, .9f);
+        OcrResult or = detect(engine, bitmap, .6f);
         ArrayList<TextBlock> textBlocks = or.getTextBlocks();
         if (textBlocks.size() > 0) {
             StringBuilder builder = new StringBuilder("");
@@ -200,13 +214,10 @@ public class SearchImgUtils {
         for (int i = 0; i < features.size(); i++) {
             String s = features.get(i);
             Bitmap img = FileUtils.getBitmapByFileName(context, s);
-            boolean b = matchImg(img, bitmap);
-            assert img != null;
             img.recycle();
-            if (b) {
+            if (matchImg(bitmap, img)) {
                 fit++;
                 if (fit == fitNum) {
-                    long end = System.currentTimeMillis();
                     return true;
                 }
             }
@@ -217,7 +228,6 @@ public class SearchImgUtils {
     /**
      * 文字检测
      *
-     * @param bitmap
      * @return
      */
     public static OcrResult detect(OcrEngine engine, Bitmap bitmap, float ocrRatio) {

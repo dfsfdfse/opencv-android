@@ -1,5 +1,7 @@
 package org.realcool.base.msg;
 
+import android.util.Log;
+
 import com.benjaminwan.ocrlibrary.Point;
 
 public class PointMsg extends BaseMsg{
@@ -12,6 +14,15 @@ public class PointMsg extends BaseMsg{
     private final double dx;
     private final double dy;
 
+    @Override
+    public String toString() {
+        return "PointMsg{" +
+                "ax=" + ax + ", ay=" + ay + "\n"+
+                ", bx=" + bx + ", by=" + by + "\n"+
+                ", cx=" + cx + ", cy=" + cy +"\n"+
+                ", dx=" + dx + ", dy=" + dy + '}';
+    }
+
     public PointMsg(double[] pointA, double[] pointB, double[] pointC, double[] pointD) {
         super();
         ax = pointA[0];
@@ -22,6 +33,7 @@ public class PointMsg extends BaseMsg{
         cy = pointC[1];
         dx = pointD[0];
         dy = pointD[1];
+        Log.e("坐标输出", toString());
     }
 
     public PointMsg(Point a,Point b,Point c,Point d) {

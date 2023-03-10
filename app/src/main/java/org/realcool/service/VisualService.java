@@ -25,6 +25,7 @@ import org.realcool.base.min.GetAllTextTask;
 import org.realcool.base.min.GetCurrentPageTask;
 import org.realcool.base.min.SearchImgTask;
 import org.realcool.base.min.SearchTextTask;
+import org.realcool.base.min.TestTask;
 import org.realcool.base.msg.BaseMsg;
 import org.realcool.base.msg.CurrentPageMsg;
 import org.realcool.base.msg.PicTextMsg;
@@ -240,6 +241,20 @@ public class VisualService extends Service {
         initMediaProjection();
         initReader();
         initDisplay();
+    }
+
+    /**
+     * 横竖屏切换
+     */
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void test(TestTask task){
+        long start = System.currentTimeMillis();
+        SearchImgUtils.getPoints(new TempMat(SearchImgUtils.getMatByBitmap(task.getTest1()), SearchImgUtils.getMatByBitmap(task.getTest2())));
+        task.getTest1().recycle();
+        task.getTest2().recycle();
+        long end = System.currentTimeMillis();
+        Log.e("检测结果耗时", (end - start)+"");
+        /*task.result(null);*/
     }
 
     @Override

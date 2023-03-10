@@ -18,7 +18,6 @@ public class DaYeTask extends CollectTask {
                 Log.e(currentPage.getName(), "当前页面");
                 currentPage.toTargetPage(this, target);
                 addOnFinished(_this -> {
-                    Log.e("DaYeTask", "完成");
                     //回到第一个任务
                     leftOne();
                 });

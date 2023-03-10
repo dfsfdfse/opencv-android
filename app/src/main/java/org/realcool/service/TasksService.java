@@ -11,17 +11,19 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.realcool.base.CollectTask;
 import org.realcool.base.MainTask;
 import org.realcool.base.impl.DaYeTask;
+import org.realcool.base.min.TestTask;
 import org.realcool.bean.Page;
 import org.realcool.bean.PageLoader;
 import org.realcool.service.event.CheckedEvent;
 import org.realcool.service.event.TaskEvent;
+import org.realcool.utils.FileUtils;
 
 import java.util.List;
 
 public class TasksService extends Service {
 
     private MainTask task;
-    private DaYeTask daYeTask;
+    private TestTask daYeTask;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -38,9 +40,12 @@ public class TasksService extends Service {
         }
         task = new MainTask();
         task.setPageList(pageList);
-        daYeTask = new DaYeTask(task, findPageByName(pageList, "设置"));
+        daYeTask = new TestTask();
         daYeTask.setOpen(false);
         task.add(daYeTask);
+        /*daYeTask = new DaYeTask(task, findPageByName(pageList, "设置"));
+        daYeTask.setOpen(false);
+        task.add(daYeTask);*/
     }
 
     private Page findPageByName(List<Page> pageList, String name){
