@@ -1,7 +1,9 @@
 package org.realcool.bean;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
+import org.realcool.game.WorldMode;
 import org.realcool.utils.FileUtils;
 
 import java.util.ArrayList;
@@ -11,7 +13,36 @@ import java.util.Objects;
 import java.util.Set;
 
 public class PageLoader {
-    public static List<Page> loadPage(Context context, String source) {
+    private List<Page> pageList;
+
+    private Context ctx;
+
+    private String source;
+
+    public List<Page> getPageList() {
+        if (pageList == null) return loadPage(ctx, source);
+        return pageList;
+    }
+
+    public static class PageLoaderHolder {
+        public static PageLoader INSTANCE = new PageLoader();
+    }
+
+    public static PageLoader getInstance() {
+        return PageLoaderHolder.INSTANCE;
+    }
+
+    public WorldMode getWorldMode() {
+        for (int i = 0; i < pageList.size(); i++) {
+            Page page = pageList.get(i);
+            if (page instanceof WorldMode) {
+                return (WorldMode) page;
+            }
+        }
+        return null;
+    }
+
+    public List<Page> loadPage(Context context, String source) {
         //读取yaml构建 page对象
         Map<String, Object> map = FileUtils.loadAssetsYaml(context, source);
         Map pages = (Map) map.get("pages");
@@ -22,20 +53,28 @@ public class PageLoader {
         buildPage(page, (Map) relation.get(s));
         List<Page> list = pageToList(page, new ArrayList<>());
         addToPage(list, feature);
+        this.pageList = list;
+        this.ctx = context;
+        this.source = source;
         return list;
     }
 
-    private static void buildPage(Page node, Map parentMap) {
+    private void buildPage(Page node, Map parentMap) {
         if (parentMap != null) {
             for (String o : (Set<String>) parentMap.keySet()) {
-                Page page = new Page(o);
+                Page page = null;
+                if (Objects.equals(o, "世界模式")){
+                    page = new WorldMode();
+                } else {
+                    page = new Page(o);
+                }
                 node.add(page);
                 buildPage(page, (Map) parentMap.get(o));
             }
         }
     }
 
-    private static List<Page> pageToList(Page page, List<Page> list) {
+    private List<Page> pageToList(Page page, List<Page> list) {
         list.add(page);
         if (page.getChildren().size() > 0) {
             for (Page child : page.getChildren()) {
@@ -45,53 +84,40 @@ public class PageLoader {
         return list;
     }
 
-    private static void addToPage(List<Page> list, Map page) {
+    private void addToPage(List<Page> list, Map page) {
         for (String o : (Set<String>) page.keySet()) {
             for (int i = 0; i < list.size(); i++) {
                 Page p = list.get(i);
                 if (Objects.equals(p.getName(), o)) {
                     Map map = (Map) page.get(o);
-                    List featureText = get("featureText", map);
-                    List featureImage = get("featureImage", map);
-                    String enterText = get("enterText", map);
-                    String enterImage = get("enterImage", map);
-                    Integer tapOffsetX = get("tapOffsetX", map);
-                    Integer tapOffsetY = get("tapOffsetY", map);
-                    tapOffsetX = tapOffsetX == null ? 0 : tapOffsetX;
-                    tapOffsetY = tapOffsetY == null ? 0 : tapOffsetY;
-                    p.setEnterText(enterText);
-                    p.setEnterImage(enterImage);
-                    p.setTapOffsetX(tapOffsetX);
-                    p.setTapOffsetY(tapOffsetY);
-                    if (featureImage != null) {
-                        Object o1 = featureImage.get(featureImage.size() - 1);
-                        if (o1 instanceof Integer) {
-                            p.setSuitFeatureImageNum((Integer) o1);
-                            p.setFeatureImage(featureImage.subList(0, featureImage.size() - 1));
-                        } else {
-                            p.setFeatureImage(featureImage.subList(0, featureImage.size()));
-                        }
-                    }
-                    if (featureText != null) {
-                        p.setFeatureText(featureText.subList(0, featureText.size() - 1));
-                        Object o1 = featureText.get(featureText.size() - 1);
-                        if (o1 instanceof Integer) {
-                            p.setSuitFeatureTextNum((Integer) o1);
-                            p.setFeatureText(featureText.subList(0, featureText.size() - 1));
-                        } else {
-                            p.setFeatureText(featureText.subList(0, featureText.size()));
-                        }
-                    }
+                    p.setTapOffsetX(getValue("tapOffsetX", map, 0));
+                    p.setTapOffsetY(getValue("tapOffsetY", map, 0));
+                    p.setFeatureText(get("featureText", map));
+                    p.setFeatureImage(get("featureImage", map));
+                    p.setSuitFeatureTextNum(getValue("featureTextNum", map, 1));
+                    p.setSuitFeatureImageNum(getValue("featureImageNum", map, 1));
+                    p.setEnterText(get("enterText", map));
+                    p.setEnterImage(get("enterImage", map));
+                    p.setOutText(get("outText", map));
+                    p.setOutImage(get("outImage", map));
                 }
             }
         }
     }
 
-    private static <T> T get(String type, Map map) {
+    private <T> T get(String type, Map map) {
         if (map != null) {
             Object o = map.get(type);
             return o != null ? (T) o : null;
         }
         return null;
+    }
+
+    private Integer getValue(String type, Map map, int value) {
+        if (map != null) {
+            Integer o = (Integer) map.get(type);
+            return o == null ? value : o;
+        }
+        return value;
     }
 }

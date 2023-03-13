@@ -45,6 +45,9 @@ pages:
         - 经典排位
       featureImage:
     世界模式:
+      enterText:
+        - 联盟征召
+        - 世界模式
       featureImage:
         - images/shangci.jpg
         - images/chengci.jpg

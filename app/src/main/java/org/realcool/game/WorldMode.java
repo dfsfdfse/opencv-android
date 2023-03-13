@@ -30,7 +30,7 @@ public class WorldMode extends Page {
         task.add(new GetAllTextTask().addOnFinished(res->{
             PicTextMsg msg = (PicTextMsg) ((CommandTask) res).getMsg();
             String currentPos = msg.getFullText("当前位置");
-            Log.e("当前位置", currentPos);
+            Log.e("当前位置", currentPos+"");
         }));
     }
 }

@@ -24,6 +24,7 @@ import org.realcool.base.impl.CheckPageTask;
 import org.realcool.base.min.GetAllTextTask;
 import org.realcool.base.min.GetCurrentPageTask;
 import org.realcool.base.min.SearchImgTask;
+import org.realcool.base.min.SearchPointTask;
 import org.realcool.base.min.SearchTextTask;
 import org.realcool.base.min.TestTask;
 import org.realcool.base.msg.BaseMsg;
@@ -149,6 +150,7 @@ public class VisualService extends Service {
         List<String> featureImage = page.getFeatureImage();
         List<String> featureText = page.getFeatureText();
         boolean text = false, img = false, nullText = false, nullImg = false;
+        Log.e(page.toString(), "page");
         if (featureText != null) {
             text = SearchImgUtils.matchText(MainActivity.getInstance().getOcrEngine(), latest, page.getFeatureText(), page.getSuitFeatureTextNum());
         } else {
@@ -162,7 +164,27 @@ public class VisualService extends Service {
         return (text && img) || (nullText && img) || (nullImg && text);
     }
 
+    private PointMsg checkPos(List<String> imgs, List<String> texts, Bitmap bitmap){
+        if (texts != null && texts.size() > 0){
+            PointMsg pointMsg = SearchImgUtils.matchText(MainActivity.getInstance().getOcrEngine(), bitmap, texts);
+            if (pointMsg != null) return pointMsg;
+            else {
+                return SearchImgUtils.matchImg(this, bitmap, imgs);
+            }
+        }
+        return null;
+    }
+
     /*------------------------------------------------------------------*/
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void getPos(SearchPointTask task){
+        Bitmap latest = getLatest();
+        PointMsg pointMsg = checkPos(task.getImgs(), task.getTexts(), latest);
+        Log.e(pointMsg.toString(), "获取坐标");
+        latest.recycle();
+        task.result(pointMsg);
+    }
 
     /**
      * 检测当前页面是哪个页面
@@ -179,6 +201,7 @@ public class VisualService extends Service {
             for (int i = 0; i < pageList.size(); i++) {
                 Page page = pageList.get(i);
                 if(checkPage(page, latest)){
+                    Log.e(page.toString(), "当前页面");
                     task.setCurrentPage(page);
                     flag = true;
                     break;
@@ -188,9 +211,11 @@ public class VisualService extends Service {
             task.result(null);
         } else {
             if(checkPage(currentPage, latest)){
+                Log.e(currentPage.toString(), "当前页面");
                 task.result(null);
             } else {
                 task.setCurrentPage(null);
+                Log.e("checkPage","递归");
                 getCurrentPage(task);
             }
         }

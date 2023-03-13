@@ -59,4 +59,5 @@ dependencies {
     compile(name:'OcrLibrary-gpu-1.6', ext:'aar')
     implementation 'be.cylab:snakeyaml:1.25.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "cz.adaptech.android:tesseract4android:2.1.1"
 }

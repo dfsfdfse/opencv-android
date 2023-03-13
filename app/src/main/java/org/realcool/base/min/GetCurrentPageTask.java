@@ -1,5 +1,7 @@
 package org.realcool.base.min;
 
+import android.util.Log;
+
 import org.realcool.base.CommandTask;
 import org.realcool.bean.Page;
 
@@ -10,6 +12,7 @@ public class GetCurrentPageTask extends CommandTask {
     public GetCurrentPageTask(List<Page> pageList) {
         super();
         this.pageList = pageList;
+        Log.e("pageList:", pageList.size()+"");
     }
 
     public List<Page> getPageList() {

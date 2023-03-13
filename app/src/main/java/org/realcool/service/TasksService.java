@@ -23,7 +23,7 @@ import java.util.List;
 public class TasksService extends Service {
 
     private MainTask task;
-    private TestTask daYeTask;
+    private DaYeTask daYeTask;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -33,19 +33,20 @@ public class TasksService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        List<Page> pageList = PageLoader.loadPage(this, "test.yaml");
+        List<Page> pageList = PageLoader.getInstance().loadPage(this, "source.yaml");
         EventBus aDefault = EventBus.getDefault();
         if (!aDefault.isRegistered(this)){
             aDefault.register(this);
         }
         task = new MainTask();
         task.setPageList(pageList);
-        daYeTask = new TestTask();
-        daYeTask.setOpen(false);
-        task.add(daYeTask);
-        /*daYeTask = new DaYeTask(task, findPageByName(pageList, "设置"));
+        FileUtils.test(this);
+        /*daYeTask = new TestTask();
         daYeTask.setOpen(false);
         task.add(daYeTask);*/
+        daYeTask = new DaYeTask(task);
+        daYeTask.setOpen(false);
+        task.add(daYeTask);
     }
 
     private Page findPageByName(List<Page> pageList, String name){

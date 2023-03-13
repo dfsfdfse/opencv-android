@@ -5,6 +5,7 @@ import android.util.Log;
 import org.realcool.base.CollectTask;
 import org.realcool.base.CommandTask;
 import org.realcool.base.min.SearchImgTask;
+import org.realcool.base.min.SearchPointTask;
 import org.realcool.base.min.SearchTextTask;
 import org.realcool.base.min.SwipeTask;
 import org.realcool.base.min.TapTask;
@@ -56,13 +57,13 @@ public class Page {
 
     private Integer swipeDuration;
 
-    private String enterText;
+    private List<String> enterText;
 
-    private String outText;
+    private List<String> outText;
 
-    private String enterImage;
+    private List<String> enterImage;
 
-    private String outImage;
+    private List<String> outImage;
     //其他进入方式执行
     private ExtEnter enter;
 
@@ -82,6 +83,86 @@ public class Page {
         this.children = new ArrayList<>();
         this.suitFeatureImageNum = 1;
         this.suitFeatureTextNum = 1;
+    }
+
+    public Integer getSwipeXStart() {
+        return swipeXStart;
+    }
+
+    public void setSwipeXStart(Integer swipeXStart) {
+        this.swipeXStart = swipeXStart;
+    }
+
+    public Integer getSwipeYStart() {
+        return swipeYStart;
+    }
+
+    public void setSwipeYStart(Integer swipeYStart) {
+        this.swipeYStart = swipeYStart;
+    }
+
+    public Integer getSwipeXEnd() {
+        return swipeXEnd;
+    }
+
+    public void setSwipeXEnd(Integer swipeXEnd) {
+        this.swipeXEnd = swipeXEnd;
+    }
+
+    public Integer getSwipeYEnd() {
+        return swipeYEnd;
+    }
+
+    public void setSwipeYEnd(Integer swipeYEnd) {
+        this.swipeYEnd = swipeYEnd;
+    }
+
+    public Integer getSwipeDuration() {
+        return swipeDuration;
+    }
+
+    public void setSwipeDuration(Integer swipeDuration) {
+        this.swipeDuration = swipeDuration;
+    }
+
+    public List<String> getEnterText() {
+        return enterText;
+    }
+
+    public void setEnterText(List<String> enterText) {
+        this.enterText = enterText;
+    }
+
+    public List<String> getOutText() {
+        return outText;
+    }
+
+    public void setOutText(List<String> outText) {
+        this.outText = outText;
+    }
+
+    public List<String> getEnterImage() {
+        return enterImage;
+    }
+
+    public void setEnterImage(List<String> enterImage) {
+        this.enterImage = enterImage;
+    }
+
+    public List<String> getOutImage() {
+        return outImage;
+    }
+
+    public void setOutImage(List<String> outImage) {
+        this.outImage = outImage;
+    }
+
+    public ExtEnterSwipe getSwipe() {
+        return swipe;
+    }
+
+    public void setSwipe(ExtEnterSwipe swipe) {
+        this.swipe = swipe;
     }
 
     public Integer getOutX() {
@@ -116,22 +197,6 @@ public class Page {
         this.tapOffsetOutY = tapOffsetOutY;
     }
 
-    public String getOutText() {
-        return outText;
-    }
-
-    public void setOutText(String outText) {
-        this.outText = outText;
-    }
-
-    public String getOutImage() {
-        return outImage;
-    }
-
-    public void setOutImage(String outImage) {
-        this.outImage = outImage;
-    }
-
     public ExtOut getOut() {
         return out;
     }
@@ -154,22 +219,6 @@ public class Page {
 
     public void setTapOffsetY(Integer tapOffsetY) {
         this.tapOffsetY = tapOffsetY;
-    }
-
-    public String getEnterText() {
-        return enterText;
-    }
-
-    public void setEnterText(String enterText) {
-        this.enterText = enterText;
-    }
-
-    public String getEnterImage() {
-        return enterImage;
-    }
-
-    public void setEnterImage(String enterImage) {
-        this.enterImage = enterImage;
     }
 
     public Integer getSuitFeatureImageNum() {
@@ -249,10 +298,10 @@ public class Page {
         children.add(page);
     }
 
-    public void swipeEnter(CollectTask task){
-        if (swipeXStart != null && swipeYStart != null && swipeXEnd != null && swipeYEnd != null){
-            task.add(new SwipeTask(swipeXStart,swipeYStart, swipeXEnd, swipeYEnd, swipeDuration));
-        } else if (swipe != null){
+    public void swipeEnter(CollectTask task) {
+        if (swipeXStart != null && swipeYStart != null && swipeXEnd != null && swipeYEnd != null) {
+            task.add(new SwipeTask(swipeXStart, swipeYStart, swipeXEnd, swipeYEnd, swipeDuration));
+        } else if (swipe != null) {
             swipe.execSwipe(task);
         }
     }
@@ -260,18 +309,13 @@ public class Page {
     /**
      * 进入当前页面的方式
      */
-    public void enter(CollectTask task){
+    public void enter(CollectTask task) {
         swipeEnter(task);
         // 通过点击坐标点的按钮
-        if (enterX != null && enterY != null){
+        if (enterX != null && enterY != null) {
             task.add(new TapTask(enterX, enterY));
-        } else if (enterText != null){
-            task.add(new SearchTextTask(enterText).addOnFinished(res->{
-                CommandTask r = (CommandTask) res;
-                addTapTask(task, r);
-            }));
-        } else if (enterImage != null){
-            task.add(new SearchImgTask(enterImage).addOnFinished(res->{
+        } else if (enterText != null || enterImage != null) {
+            task.add(new SearchPointTask(enterImage, enterText).addOnFinished(res -> {
                 CommandTask r = (CommandTask) res;
                 addTapTask(task, r);
             }));
@@ -282,9 +326,9 @@ public class Page {
         }
     }
 
-    private void addTapTask(CollectTask task, CommandTask r){
-        PointMsg msg =null;
-        if (r.getMsg() != null){
+    private void addTapTask(CollectTask task, CommandTask r) {
+        PointMsg msg = null;
+        if (r.getMsg() != null) {
             msg = (PointMsg) r.getMsg();
             enterX = msg.getX();
             enterY = msg.getY();
@@ -298,18 +342,12 @@ public class Page {
     /**
      * 返回父级
      */
-    public void out(CollectTask task){
+    public void out(CollectTask task) {
         // 通过点击坐标点的按钮
-        if (outX != null && outY != null){
+        if (outX != null && outY != null) {
             task.add(new TapTask(outX, outY));
-        } else if (outText != null){
-            task.add(new SearchTextTask(outText).addOnFinished(res->{
-                Log.e("搜索", "searchTextTask");
-                CommandTask r = (CommandTask) res;
-                addTapTask(task, r);
-            }));
-        } else if (outImage != null){
-            task.add(new SearchImgTask(outImage).addOnFinished(res->{
+        } else if (outText != null) {
+            task.add(new SearchPointTask(outImage, outText).addOnFinished(res -> {
                 CommandTask r = (CommandTask) res;
                 addTapTask(task, r);
             }));
@@ -321,15 +359,18 @@ public class Page {
     }
 
     //当前页面到目标页面
-    public void toTargetPage(CollectTask task, Page target){
+    public void toTargetPage(CollectTask task, Page target) {
         toTargetPage(task, this, target, null);
     }
 
-    private void toTargetPage(CollectTask task,Page current, Page target, List<Page> routes){
+    private void toTargetPage(CollectTask task, Page current, Page target, List<Page> routes) {
         if (current == target) return;
-        if (routes == null) routes = startToEnd(current, target);
+        if (routes == null) {
+            routes = startToEnd(current, target);
+            if (routes.size() == 0) return;
+        }
         int i = routes.indexOf(current);
-        if (i != -1 && i < routes.size() - 1){
+        if (i != -1 && i < routes.size() - 1) {
             Page node = routes.get(i + 1);
             if (current.parent == node) {
                 current.out(task);
@@ -345,6 +386,7 @@ public class Page {
 
     /**
      * 获取最短路径
+     *
      * @param start
      * @param end
      * @return
@@ -370,11 +412,11 @@ public class Page {
         return pages;
     }
 
-    public List<Page> toTargetRoutes(Page target){
+    public List<Page> toTargetRoutes(Page target) {
         return startToEnd(this, target);
     }
 
-    public List<Page> targetToCurrentRoutes(Page target){
+    public List<Page> targetToCurrentRoutes(Page target) {
         return startToEnd(target, this);
     }
 
@@ -385,15 +427,15 @@ public class Page {
         }
     }
 
-    public interface ExtEnterSwipe{
+    public interface ExtEnterSwipe {
         void execSwipe(CollectTask task);
     }
 
-    public interface ExtEnter{
+    public interface ExtEnter {
         void execExt();
     }
 
-    public interface ExtOut{
+    public interface ExtOut {
         void execOut();
     }
 }

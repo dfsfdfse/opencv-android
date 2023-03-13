@@ -3,6 +3,9 @@ package org.realcool.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
+
+import com.googlecode.tesseract.android.TessBaseAPI;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -46,5 +49,11 @@ public class FileUtils {
             }
         }
         return null;
+    }
+
+    public static void test(Context context){
+        Bitmap bitmapByFileName = getBitmapByFileName(context, "images/s.png");
+        String imgText = TessUtils.getImgText(bitmapByFileName);
+        Log.e("识别文字", imgText);
     }
 }

@@ -1,5 +1,7 @@
 package org.realcool.base.msg;
 
+import android.util.Log;
+
 import com.benjaminwan.ocrlibrary.Point;
 import com.benjaminwan.ocrlibrary.TextBlock;
 
@@ -45,6 +47,7 @@ public class PicTextMsg extends BaseMsg{
 
     public String getFullText(String text){
         for (TextBlock textBlock : textList) {
+            Log.e(textBlock.getText(), "获得文字");
             if (textBlock.getText().contains(text)) {
                 return textBlock.getText();
             }

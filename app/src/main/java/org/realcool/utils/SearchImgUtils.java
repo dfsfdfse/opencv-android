@@ -209,13 +209,64 @@ public class SearchImgUtils {
         return false;
     }
 
+    public static PointMsg matchText(OcrEngine engine, Bitmap bitmap, List<String> texts) {
+        OcrResult or = detect(engine, bitmap, .9f);
+        ArrayList<TextBlock> textBlocks = or.getTextBlocks();
+        if (textBlocks.size() > 0) {
+            int i = 0, j = 0;
+            int size = textBlocks.size();
+            int s = texts.size();
+            StringBuilder builder = new StringBuilder();
+            while (i < size || j < s) {
+                TextBlock textBlock = textBlocks.get(i);
+                String text = textBlock.getText();
+                String s1 = texts.get(j);
+                ArrayList<com.benjaminwan.ocrlibrary.Point> boxPoint = textBlock.getBoxPoint();
+                if (text.contains(s1)) {
+                    return new PointMsg(boxPoint.get(0), boxPoint.get(1), boxPoint.get(2), boxPoint.get(3));
+                } else {
+                    if (builder.indexOf(s1) != -1) {
+                        return new PointMsg(boxPoint.get(0), boxPoint.get(1), boxPoint.get(2), boxPoint.get(3));
+                    } else {
+                        builder.append(text).append("\n");
+                        i++;
+                        if (i == size) j++;
+                        if (j == s) return null;
+                    }
+                }
+
+            }
+        }
+        return null;
+    }
+
+    public static PointMsg matchImg(Context context, Bitmap bitmap, List<String> imgs){
+        Mat byBitmap = SearchImgUtils.getMatByBitmap(bitmap);
+        TempMat mat = new TempMat(null, byBitmap);
+        for (int i = 0; i < imgs.size(); i++) {
+            String s = imgs.get(i);
+            Bitmap img = FileUtils.getBitmapByFileName(context, s);
+            mat.setOriginal(SearchImgUtils.getMatByBitmap(img));
+            MatchPoint point = boolMatch(mat);
+            if (point.isMatch()){
+                PointMsg points = getPoints(point, mat);
+                mat.getOriginal().release();
+                mat.getTemp().release();
+                img.recycle();
+                return points;
+            }
+        }
+        byBitmap.release();
+        return null;
+    }
+
     public static boolean matchImg(Context context, Bitmap bitmap, List<String> features, int fitNum) {
         int fit = 0;
         for (int i = 0; i < features.size(); i++) {
             String s = features.get(i);
             Bitmap img = FileUtils.getBitmapByFileName(context, s);
-            img.recycle();
             if (matchImg(bitmap, img)) {
+                img.recycle();
                 fit++;
                 if (fit == fitNum) {
                     return true;
@@ -235,5 +286,9 @@ public class SearchImgUtils {
         int size = Math.max(bitmap.getHeight(), bitmap.getWidth());
         size = (int) (ocrRatio * size);
         return engine.detect(bitmap, temp, size);
+    }
+
+    public static void test(){
+
     }
 }
