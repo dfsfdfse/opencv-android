@@ -6,6 +6,7 @@ import org.realcool.base.CollectTask;
 import org.realcool.base.CommandTask;
 import org.realcool.base.min.SearchImgTask;
 import org.realcool.base.min.SearchTextTask;
+import org.realcool.base.min.SwipeTask;
 import org.realcool.base.min.TapTask;
 import org.realcool.base.msg.PointMsg;
 
@@ -45,6 +46,16 @@ public class Page {
 
     private Integer tapOffsetOutY;
 
+    private Integer swipeXStart;
+
+    private Integer swipeYStart;
+
+    private Integer swipeXEnd;
+
+    private Integer swipeYEnd;
+
+    private Integer swipeDuration;
+
     private String enterText;
 
     private String outText;
@@ -56,6 +67,8 @@ public class Page {
     private ExtEnter enter;
 
     private ExtOut out;
+
+    private ExtEnterSwipe swipe;
 
     @Override
     public String toString() {
@@ -236,10 +249,19 @@ public class Page {
         children.add(page);
     }
 
+    public void swipeEnter(CollectTask task){
+        if (swipeXStart != null && swipeYStart != null && swipeXEnd != null && swipeYEnd != null){
+            task.add(new SwipeTask(swipeXStart,swipeYStart, swipeXEnd, swipeYEnd, swipeDuration));
+        } else if (swipe != null){
+            swipe.execSwipe(task);
+        }
+    }
+
     /**
      * 进入当前页面的方式
      */
     public void enter(CollectTask task){
+        swipeEnter(task);
         // 通过点击坐标点的按钮
         if (enterX != null && enterY != null){
             task.add(new TapTask(enterX, enterY));
@@ -361,6 +383,10 @@ public class Page {
             list.add(note);
             getRouteToRoot(note.getParent(), list);
         }
+    }
+
+    public interface ExtEnterSwipe{
+        void execSwipe(CollectTask task);
     }
 
     public interface ExtEnter{

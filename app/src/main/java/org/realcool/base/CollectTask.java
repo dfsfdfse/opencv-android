@@ -55,4 +55,8 @@ public abstract class CollectTask extends BaseTask {
     public void remove(BaseTask task) {
         children.remove(task);
     }
+
+    public void removeLast(BaseTask task) {
+        children.removeLast();
+    }
 }

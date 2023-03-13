@@ -57,6 +57,32 @@ public class SwipeTask extends CommandTask {
         super();
     }
 
+
+    /**
+     *
+     * @param sx 滑动初始坐标x
+     * @param sy 滑动初始坐标y
+     * @param ex 滑动结束坐标x
+     * @param ey 滑动结束坐标x
+     * @param duration 滑动持续时间
+     */
+    public SwipeTask(int sx, int sy, int ex, int ey, long duration) {
+        super();
+        this.sx = sx;
+        this.sy = sy;
+        this.ex = ex;
+        this.ey = ey;
+        this.duration = duration;
+    }
+    /**
+     *
+     * @param sx 滑动初始坐标x
+     * @param sy 滑动初始坐标y
+     * @param ex 滑动结束坐标x
+     * @param ey 滑动结束坐标x
+     * @param duration 滑动持续时间
+     * @param delay 滑动前延迟时间
+     */
     public SwipeTask(int sx, int sy, int ex, int ey, long duration, long delay) {
         super();
         this.sx = sx;
